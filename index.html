@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hd"><div class="in">
+ <div class="brand" onclick="show('home')"><div class="lg">🛡️</div><div>جمعية التكوين والتنمية الاجتماعية<br>لرصاصي جهة سوس ماسة</div></div>
+ <nav id="nav"><button data-p="home">الرئيسية</button><button data-p="training">التكوينات</button><button data-p="directory">دليل الحرفيين</button><button data-p="contact">اتصل بنا</button><button data-p="account" class="acc">👤 حسابي</button></nav>
+</div></header>
+
+<!-- HOME -->
+<section id="page-home" class="page on">
+ <div class="hero">
+  <h1>جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة</h1><div>تكوين يطورك... وتضامن يحميك</div>
+  <button class="btn w" onclick="show('directory')">📖 دليل الحرفيين</button>
+  <button class="btn y" onclick="show('register')">← سجل الآن ←</button><br>
+  <span class="tag">معتمد رسميا • جهة سوس ماسة • منذ 2026</span>
+ </div>
+ <div class="in"><div class="grid3" id="specCards"></div></div>
+ <div class="partners"><b style="font-size:20px">شركاؤنا</b><span class="small">نعمل مع أفضل الشركاء لدعم التكوين والمهنيين</span><div><div><span>Bostik</span><span>HILTI</span><span>CODIAG</span><span>Bricoma</span></div></div></div>
+</section>
+
+<!-- REGISTER -->
+<section id="page-register" class="page"><div class="blue"><div class="in">
+ <h2>سجل الآن - انضم للجمعية</h2><p>املأ الاستمارة للانضمام إلى الجمعية والاستفادة من التكوينات والبرامج</p>
+ <div class="two">
+  <div class="form">
+   <label>الاسم الكامل</label><input id="rName" placeholder="أدخل اسمك الكامل" oninput="prev()">
+   <label>رقم الهاتف WhatsApp 🟢</label><input id="rPhone" inputmode="tel" placeholder="+212 6 00 00 00 00">
+   <label>المدينة</label><select id="rCity" onchange="prev()"></select><div class="note">أكادير / إنزكان / أيت ملول / القليعة / تيزنيت / طاطا</div>
+   <label>التخصص</label><div class="opts" id="rSpec"></div>
+   <label>سنوات الخبرة</label><input id="rExp" type="number" min="0" placeholder="مثال: 5 سنوات">
+   <label>أرفق صورة البطاقة الوطنية وصورة شخصية</label>
+   <div class="up"><div><b>صورة بطاقة التعريف</b><small id="idName">اضغط للتحميل</small></div><button class="btn y" onclick="$('idFile').click()">📷 اختر صورة</button></div>
+   <div class="up"><div><b>صورة شخصية</b><small id="faceName">اضغط للتحميل</small></div><button class="btn y" onclick="$('faceFile').click()">📷 اختر صورة</button></div>
+   <input type="file" id="idFile" accept="image/*" hidden onchange="fileName(this,'idName')"><input type="file" id="faceFile" accept="image/*" hidden onchange="fileName(this,'faceName')">
+   <button class="btn y full" onclick="submitReg()">✈️ إرسال طلب الانخراط</button>
+  </div>
+  <div><div class="card" style="background:#fff;color:#0B1A3A"><b style="font-size:20px;display:block;text-align:center;margin-bottom:8px">بطاقة عضوية رقمية</b><div id="regPreview"></div></div></div>
+ </div>
+</div></div></section>
+
+<!-- CONFIRM -->
+<section id="page-confirm" class="page"><div class="blue"><div class="in" style="max-width:520px">
+ <div class="ok">✓</div><h2 style="color:#fff">تم تجهيز طلبك!</h2>
+ <p>لإتمام الطلب، أرسل رسالة واتساب للجمعية مع صورة البطاقة الوطنية والصورة الشخصية. سيتواصل معك الفريق لتأكيد عضويتك.</p>
+ <div class="sum"><span class="stt">قيد المراجعة</span><b style="font-size:20px">ملخص الطلب</b><br>الاسم: <b id="cName"></b><br>المدينة: <b id="cCity"></b><br>التخصص: <b id="cSpec"></b><br>رقم العضوية المؤقت: <b id="cNo" style="font-size:18px"></b></div>
+ <div id="confCard"></div>
+ <button class="btn g full noprint" onclick="sendReg()">💬 أرسل الطلب عبر واتساب</button>
+ <button class="btn y full noprint" onclick="dlCard()">⬇️ تحميل بطاقة العضوية (صورة)</button>
+ <button class="btn w full noprint" onclick="doPrint()">🖨️ طباعة بطاقة العضوية</button>
+ <button class="btn y full noprint" onclick="show('home')">🏠 العودة للرئيسية</button>
+ <button class="btn w full noprint" onclick="track()">👁️ تتبع طلبك</button>
+</div></div></section>
+
+<!-- DIRECTORY -->
+<section id="page-directory" class="page"><div class="in pg">
+ <h2>دليل الحرفيين</h2>
+ <div class="card pf"><input id="dq" placeholder="قلب بالاسم أو المدينة..." oninput="renderDir()"><select id="dsp" onchange="renderDir()"></select></div>
+ <div class="fx" id="dirList"></div>
+</div></section>
+
+<!-- TRAINING -->
+<section id="page-training" class="page"><div class="in pg"><h2>التكوينات</h2><div class="grid3" id="trainList"></div>
+ <button class="btn y" onclick="show('register')">سجل الآن</button></div></section>
+
+<!-- CONTACT -->
+<section id="page-contact" class="page"><div class="in pg"><h2>اتصل بنا</h2>
+ <div class="card" style="line-height:2.2">📞 0600213299<br>✉️ lahcenassoughay@gmail.com<br>📍 أكادير، جهة سوس ماسة، المغرب
+ <br><button class="btn g" onclick="wa('السلام عليكم، بغيت معلومات على الجمعية')">💬 واتساب</button> <a class="btn b" href="mailto:lahcenassoughay@gmail.com">📧 ايميل</a></div></div></section>
+
+<!-- ACCOUNT / SUPPLIER -->
+<section id="page-account" class="page"><div class="in pg">
+ <h2>مساحة المورد - منتجاتي</h2>
+ <div id="pTabs"></div><div id="pList" style="margin-top:8px"></div>
+ <button class="btn y full" onclick="$('pForm').hidden=!$('pForm').hidden">+ أضف منتج</button>
+ <div id="pForm" class="card" hidden style="margin-top:12px">
+  <b>تفاصيل المنتج الجديد</b>
+  <label>اسم المنتج</label><input id="pName" placeholder="مثال: خلاط حمام نحاسي">
+  <label>الفئة</label><div class="opts" id="pCat"></div>
+  <label>السعر بالدرهم</label><input id="pPrice" type="number" min="0" placeholder="مثال: 450" oninput="calc()">
+  <label>الكمية المتوفرة</label><input id="pStock" type="number" min="0" placeholder="مثال: 20 قطعة">
+  <label><input type="checkbox" id="pMemOn" checked onchange="calc()" style="width:auto"> تفعيل خصم للأعضاء</label>
+  <label>سعر العضو بالدرهم</label><input id="pMem" type="number" min="0" placeholder="مثال: 380" oninput="calc()">
+  <div id="pPrev" class="small" style="margin-top:6px"></div>
+  <label>صورة المنتج</label><div class="up" style="background:var(--soft)"><div><small id="pImgName">JPG, PNG • حتى 5MB</small></div><button class="btn y" onclick="$('pFile').click()">📷 اختر صورة</button></div>
+  <input type="file" id="pFile" accept="image/*" hidden onchange="prodImg(this)">
+  <button class="btn b full" onclick="addProd()">📷 نشر المنتج</button>
+ </div>
+ <h2 style="margin-top:26px">اشتراك المورد</h2>
+ <p class="small">لنشر المنتجات للعموم يجب تفعيل الاشتراك عبر واتساب أو الايميل.</p>
+ <div class="plans">
+  <div class="card"><b>شهري</b><h3>99 درهم / شهر</h3><button class="btn w full" onclick="plan('شهري - 99 درهم')">اختر</button></div>
+  <div class="card" style="border:3px solid var(--yel)"><span class="bd2" style="background:var(--yel);color:#0B3D91">الأكثر شعبية</span><br><b>ربع سنوي</b><h3>249 درهم / 3 أشهر</h3><button class="btn y full" onclick="plan('ربع سنوي - 249 درهم')">اختر ⭐</button></div>
+  <div class="card"><b>سنوي</b><h3>899 درهم / سنة</h3><button class="btn w full" onclick="plan('سنوي - 899 درهم')">اختر</button></div>
+ </div>
+</div></section>
+
+<div id="toast" class="toast"></div>
+<div id="lm" class="lm"><div class="card"><b>اضغط على الرابط باش يتحل</b><p class="small">المتصفح منع الفتح التلقائي</p><a id="lmA" class="btn g full" target="_blank" rel="noopener" href="#">💬 افتح الرابط</a><button class="btn w full" onclick="copyLink()">📋 نسخ الرابط</button><button class="btn w full" onclick="$('lm').classList.remove('on')">إغلاق</button></div></div>
+<footer class="foot"><div class="in">
+ <div class="brand"><div class="lg">🛡️</div><div>جمعية التكوين والتنمية الاجتماعية<br>لرصاصي جهة سوس ماسة<br><span class="small">تكوين مهني وتضامن لخدمة حرفيي السباكة بجهة سوس ماسة</span></div></div>
+ <div><h4>تواصل معنا</h4>📞 0600213299<br>✉️ lahcenassoughay@gmail.com<br>📍 أكادير، جهة سوس ماسة، المغرب</div>
+ <div><h4>تابعنا</h4>Facebook · YouTube · LinkedIn</div>
+</div><div class="cp">© جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة - جميع الحقوق محفوظة</div></footer>
+
+<script src="script.js"></script>
+</body>
+</html>
