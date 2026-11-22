@@ -51,8 +51,8 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 <script>
 /* ===== الإعدادات: بدّل هاد القيم ===== */
 const CFG = {
-  url: 'https://YOUR-PROJECT.supabase.co',
-  key: 'YOUR-ANON-PUBLIC-KEY',
+  url: 'https://oldwrxirxrshwvyqvpxp.supabase.co',
+  key: 'sb_publishable_Uv5HMjCc7ZgI4S7BlyjaFQ__ACuR_DX',
   phone: '0600213299',
   email: 'lahcenassoughay@gmail.com'
 };
