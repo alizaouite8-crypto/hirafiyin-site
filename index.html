@@ -48,7 +48,7 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 <body>
 <header><div class="wrap"><a class="bl" href="#/"><img class="lg" src="logo.jpeg.jpg" alt="شعار الجمعية" onerror="this.remove()"><span><b>جمعية التكوين والتنمية الاجتماعية<br>لرصاصي جهة سوس ماسة</b><span class="brand">HIRAFIYIN • SOUSS MASSA</span></span></a>
 <button id="mb" aria-label="menu">☰</button>
-<nav id="nv"><a href="#/" data-i18n="home"></a><a class="hx" href="#/hirafiyin">HIRAFIYIN</a><a href="#/trainings" data-i18n="trainings"></a><a href="#/products" data-i18n="products"></a><a href="#/partners" data-i18n="partners"></a><a href="#/join" data-i18n="join"></a><a href="#/contact" data-i18n="contact"></a><a href="#/admin" data-i18n="admin" style="border:1px solid #ffffff66;border-radius:6px;padding:0 10px"></a><span class="lang"><button data-lang="ar">عربي</button><button data-lang="fr">FR</button><button data-lang="en">EN</button></span></nav></div></header>
+<nav id="nv"><a href="#/" data-i18n="home"></a><a class="hx" href="#/hirafiyin">HIRAFIYIN</a><a href="#/trainings" data-i18n="trainings"></a><a href="#/products" data-i18n="products"></a><a href="#/partners" data-i18n="partners"></a><a href="join.html" data-i18n="join"></a><a href="#/contact" data-i18n="contact"></a><a href="#/admin" data-i18n="admin" style="border:1px solid #ffffff66;border-radius:6px;padding:0 10px"></a><span class="lang"><button data-lang="ar">عربي</button><button data-lang="fr">FR</button><button data-lang="en">EN</button></span></nav></div></header>
 <main id="app"></main>
 <footer><div class="wrap"><span style="display:flex;align-items:center;gap:10px"><img class="lg" style="height:42px;width:42px" src="logo.jpeg.jpg" alt="" onerror="this.remove()">HIRAFIYIN · جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة</span><span><a id="fw" href="#">واتساب</a> · <a id="fe" href="#"></a></span></div><div style="max-width:1100px;margin:12px auto 0;padding:12px 20px 0;border-top:1px solid #ffffff22;text-align:left" dir="ltr"><span style="font-size:14px;color:#f0c58f;font-weight:800">Développé par Abdelaali Ait Zaouite</span></div></footer>
 <dialog id="dlg"></dialog><div id="toast" role="status"></div>
@@ -83,7 +83,6 @@ prev:['السابق','Précédent','Previous'],next:['التالي','Suivant','N
 const LIX={ar:0,fr:1,en:2};let LANG='ar';try{LANG=localStorage.getItem('hirafiyin_lang')||'ar'}catch(e){}
 const T=k=>(D[k]||[k,k,k])[LIX[LANG]];
 const $=s=>document.querySelector(s),app=$('#app'),dlg=$('#dlg');
-// FIX 1 - Supabase may fail on Android WebView / slow network - don't crash site
 let sb=null;
 try{ if(window.supabase) sb=supabase.createClient(CFG.url,CFG.key); }catch(e){ sb=null; }
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -113,13 +112,13 @@ async function loadDir(){if(!sb){MEM=[];PRD=[];return} try{const[m,p]=await Prom
 function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.craft||m.craft===f.craft));if(lim)l=l.slice(0,lim);if(!l.length)return`<p class="empty">${T('noMem')}</p>`;
 return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.')}</div></article>`}).join('')}</div>`}
 async function pageHome(){
-app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="#/join">${T('joinA')}</a> <a class="btn alt" href="#/join">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
-${sec('sante','شراكة تعاونية في خدمة الصحة','Un Partenariat au Service de la Santé — Centre Radiologie Touderte • Aït Melloul',`<div class="health"><img src="p1.jpeg.JPG" alt="" loading="lazy" onerror="this.src='logo.jpeg.jpg'"><div class="b"><span class="badge">Partenariat • شراكة</span><h3 style="margin:0 0 8px">الفحوصات الطبية لأعضاء الجمعية</h3><p style="color:var(--mut)">يستفيد أعضاء HIRAFIYIN من فحوصات طبية بشراكة مع مركز الأشعة تودرت - أيت ملول:</p><ul style="margin:10px 0;line-height:2"><li><b>IRM</b> - الرنين المغناطيسي</li><li><b>Radiologie</b> - الأشعة السينية</li><li><b>Échographie</b> - الفحص بالصدى</li><li><b>Mammographie</b> - فحص الثدي</li></ul><a class="btn" href="#/join">${T('joinReq')}</a></div></div>`)}
+app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
+${sec('sante','شراكة تعاونية في خدمة الصحة','Un Partenariat au Service de la Santé — Centre Radiologie Touderte • Aït Melloul',`<div class="health"><img src="p1.jpeg.JPG" alt="" loading="lazy" onerror="this.src='logo.jpeg.jpg'"><div class="b"><span class="badge">Partenariat • شراكة</span><h3 style="margin:0 0 8px">الفحوصات الطبية لأعضاء الجمعية</h3><p style="color:var(--mut)">يستفيد أعضاء HIRAFIYIN من فحوصات طبية بشراكة مع مركز الأشعة تودرت - أيت ملول:</p><ul style="margin:10px 0;line-height:2"><li><b>IRM</b> - الرنين المغناطيسي</li><li><b>Radiologie</b> - الأشعة السينية</li><li><b>Échographie</b> - الفحص بالصدى</li><li><b>Mammographie</b> - فحص الثدي</li></ul><a class="btn" href="join.html">${T('joinReq')}</a></div></div>`)}
 ${sec('c',T('craftsT'),'',`<div class="chips">${CRAFTS.map(c=>`<span>${c}</span>`).join('')}</div>`)}
 ${sec('w',T('whyT'),'',cards2(T('why')))}
 ${sec('hh',T('hirT'),T('hirS'),`<div id="hHome">...</div><p style="margin-top:18px"><a class="btn alt" href="#/hirafiyin" style="color:var(--ink)">${T('seeAll')}</a></p>`)}
 ${sec('t',T('trT'),T('trS'),`<div id="tr">...</div><p style="margin-top:18px"><a class="btn alt" href="#/trainings" style="color:var(--ink)">${T('seeG')}</a></p>`)}
-${sec('h',T('howT'),'',cards2(T('how').map(([h,p],i)=>[(i+1)+'. '+h,p]))+`<p style="margin-top:18px"><a class="btn" href="#/join">${T('joinReq')}</a></p>`)}
+${sec('h',T('howT'),'',cards2(T('how').map(([h,p],i)=>[(i+1)+'. '+h,p]))+`<p style="margin-top:18px"><a class="btn" href="join.html">${T('joinReq')}</a></p>`)}
 ${sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="#/sell" style="color:var(--ink)">${T('sell')}</a></p>`)}
 ${sec('p',T('paT'),T('paS'),'<div id="pa">...</div>')}
 ${sec('k',T('ctT'),T('ctS'),contactHtml())}`;
@@ -127,7 +126,7 @@ try{$('#tr').innerHTML=await trainingsHtml();}catch(e){if($('#tr')) $('#tr').inn
 try{$('#pr').innerHTML=await productsHtml();}catch(e){}
 try{$('#pa').innerHTML=await partnersHtml();}catch(e){}
 try{await loadDir(); if($('#hHome')) $('#hHome').innerHTML=memCards({},6);}catch(e){}}
-async function pageHir(){app.innerHTML=sec('hr',T('hirT'),T('hirS'),`<div class="fl"><select id="fk"><option value="">${T('all')}</option><option value="artisan">${T('artisans')}</option><option value="supplier">${T('suppliers')}</option></select><select id="fc"><option value="">${T('all')}</option>${craftOpts}</select></div><div id="hl">...</div><p style="margin-top:18px"><a class="btn" href="#/join">${T('joinReq')}</a></p>`);await loadDir();const up=()=>{$('#hl').innerHTML=memCards({kind:$('#fk').value,craft:$('#fc').value})};up();$('#fk').onchange=$('#fc').onchange=up}
+async function pageHir(){app.innerHTML=sec('hr',T('hirT'),T('hirS'),`<div class="fl"><select id="fk"><option value="">${T('all')}</option><option value="artisan">${T('artisans')}</option><option value="supplier">${T('suppliers')}</option></select><select id="fc"><option value="">${T('all')}</option>${craftOpts}</select></div><div id="hl">...</div><p style="margin-top:18px"><a class="btn" href="join.html">${T('joinReq')}</a></p>`);await loadDir();const up=()=>{$('#hl').innerHTML=memCards({kind:$('#fk').value,craft:$('#fc').value})};up();$('#fk').onchange=$('#fc').onchange=up}
 async function pageTrainings(){app.innerHTML=sec('t',T('trT'),T('trS'),'<div id="tr">...</div>')+sec('g',T('galT'),T('galS'),galleryHtml());$('#tr').innerHTML=await trainingsHtml()}
 async function pagePartners(){app.innerHTML=sec('p',T('paT'),T('paS'),'<div id="pa">...</div>');$('#pa').innerHTML=await partnersHtml()}
 async function pageProducts(){app.innerHTML=sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="#/sell" style="color:var(--ink)">${T('sell')}</a></p>`);$('#pr').innerHTML=await productsHtml()}
@@ -152,7 +151,6 @@ document.addEventListener('submit',async e=>{const f=e.target;e.preventDefault()
 try{
 if(f.id==='joinForm'){
   const msg=`السلام عليكم، أنا ${d.name} (${d.kind==='artisan'?'حرفي':'مورد'}) من ${d.city}، تخصصي ${d.craft}. هاتفي ${d.phone}. أرغب في الانخراط في الجمعية.`;
-  // FIX 2 - ila Supabase ma-khdemch, sifto l WhatsApp nichan - ma-y-di3ch talab
   if(!sb){ window.open(waLink(CFG.phone,msg),'_blank'); f.closest('.panel').innerHTML=doneHtml(msg); return; }
   d.consent=true;const{error}=await sb.from('members').insert(d);if(error)throw error;f.closest('.panel').innerHTML=doneHtml(msg)
 }
@@ -186,7 +184,6 @@ function route(){
 }
 function applyLang(){document.documentElement.lang=LANG;document.documentElement.dir=LANG==='ar'?'rtl':'ltr';document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T(el.dataset.i18n)});route()}
 addEventListener('hashchange',route);applyLang();
-// FIX 3 - ila l-hash t-qta3 f WhatsApp Android, 3awd 7awl
 setTimeout(()=>{ if(!app.innerHTML.trim()) route(); },800);
 </script>
 </body>
