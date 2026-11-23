@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>طلب الانخراط - HIRAFIYIN</title>
+<style>body{margin:0;font-family:Tahoma,sans-serif;background:#f4f7fa;color:#13263b}header{background:#0a2540;color:#fff;padding:14px;text-align:center;font-weight:800} .box{max-width:520px;margin:20px auto;background:#fff;padding:20px;border-radius:12px} label{display:block;margin:12px 0 4px;font-weight:700} input,select{width:100%;padding:12px;border:1px solid #d9e1e9;border-radius:8px;font-size:16px;box-sizing:border-box} .btn{display:block;width:100%;margin-top:18px;background:#b87333;color:#fff;border:0;padding:14px;border-radius:8px;font-size:18px;font-weight:800} a{color:#0a2540}</style>
+</head>
+<body>
+<header>HIRAFIYIN • طلب الانخراط</header>
+<div class="box">
+<h2 style="margin:0">طلب الانخراط</h2>
+<p style="color:#5b6b7c">تراجع الجمعية طلبك وتتصل بك عبر واتساب.</p>
+<form onsubmit="sendWA(event)">
+<label>أنا</label>
+<select id="kind"><option value="حرفي">حرفي</option><option value="مورد / شركة">مورد / شركة</option></select>
+<label>الاسم الكامل</label>
+<input id="name" required placeholder="مثال: محمد العلوي">
+<label>رقم الهاتف (واتساب)</label>
+<input id="phone" type="tel" required placeholder="06XXXXXXXX">
+<label>المدينة</label>
+<input id="city" required placeholder="أكادير">
+<label>التخصص / المجال</label>
+<select id="craft"><option>السباكة</option><option>الكهرباء</option><option>النجارة</option><option>البناء</option><option>الصباغة</option><option>التبريد والتكييف</option><option>أخرى</option></select>
+<label><input type="checkbox" required style="width:auto"> أوافق على ظهور اسمي ومدينتي ورقم هاتفي في دليل الجمعية بعد قبول طلبي.</label>
+<button class="btn">أرسل طلب الانخراط عبر واتساب</button>
+</form>
+<p style="text-align:center"><a href="https://hirafiyin-soussema.vercel.app">← الرجوع للموقع</a></p>
+</div>
+<script>
+function sendWA(e){
+ e.preventDefault();
+ var msg = "السلام عليكم، أنا " + document.getElementById('name').value + " (" + document.getElementById('kind').value + ") من " + document.getElementById('city').value + "، تخصصي " + document.getElementById('craft').value + ". هاتفي " + document.getElementById('phone').value + ". أرغب في الانخراط في الجمعية.";
+ window.location.href = "https://wa.me/212600213299?text=" + encodeURIComponent(msg);
+}
+</script>
+</body>
+</html>
