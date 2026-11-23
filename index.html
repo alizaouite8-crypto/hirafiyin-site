@@ -42,9 +42,11 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .health{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid}@media(min-width:800px){.health{grid-template-columns:1fr 1fr}}.health img{width:100%;height:100%;object-fit:cover;min-height:260px}.health .b{padding:26px}
 .badge{display:inline-block;background:#d6f0e2;color:var(--ok);padding:4px 12px;border-radius:99px;font-size:.85rem;font-weight:700;margin-bottom:10px}
 :focus-visible{outline:3px solid var(--cu);outline-offset:2px}
+.topbar{background:#000;color:#f0c58f;text-align:center;font-size:13px;font-weight:800;padding:7px 10px}
 </style>
 </head>
 <body>
+<div class="topbar" dir="ltr">Développé par Abdelaali Ait Zaouite</div>
 <header><div class="wrap"><a class="bl" href="#/"><img class="lg" src="logo.jpeg.jpg" alt="شعار الجمعية" onerror="this.remove()"><span><b>جمعية التكوين والتنمية الاجتماعية<br>لرصاصي جهة سوس ماسة</b><span class="brand">HIRAFIYIN • SOUSS MASSA</span></span></a>
 <button id="mb" aria-label="menu">☰</button>
 <nav id="nv"><a href="#/" data-i18n="home"></a><a class="hx" href="#/hirafiyin">HIRAFIYIN</a><a href="#/trainings" data-i18n="trainings"></a><a href="#/products" data-i18n="products"></a><a href="#/partners" data-i18n="partners"></a><a href="#/join" data-i18n="join"></a><a href="#/contact" data-i18n="contact"></a><a href="#/admin" data-i18n="admin" style="border:1px solid #ffffff66;border-radius:6px;padding:0 10px"></a><span class="lang"><button data-lang="ar">عربي</button><button data-lang="fr">FR</button><button data-lang="en">EN</button></span></nav></div></header>
@@ -96,8 +98,8 @@ const cbtn=(p,m)=>`<div class="pc"><a class="btn sm ok" target="_blank" rel="noo
 const doneHtml=m=>`<h3>${T('thanks')}</h3><p>${T('thanksS')}</p><a class="btn ok" target="_blank" rel="noopener" href="${waLink(CFG.phone,m)}">${T('sendWa')}</a>`;
 const contactHtml=()=>`<p><a class="btn" href="${waLink(CFG.phone)}" target="_blank" rel="noopener">${T('wa')}</a> <a class="btn alt" href="tel:${CFG.phone}" style="color:var(--ink)">${CFG.phone}</a> <a class="btn alt" href="mailto:${CFG.email}" style="color:var(--ink)">${CFG.email}</a></p>`;
 const cards2=a=>`<div class="grid">${a.map(([h,p])=>`<div class="card k"><div class="b"><h3>${h}</h3><p>${p}</p></div></div>`).join('')}</div>`;
-const GAL=[['p1.jpeg.JPG','شراكة تعاونية في خدمة الصحة - Centre Radiologie Touderte'],['p7.jpeg.jpg','معرض مهني دولي - Turquie'],['logo.jpeg.jpg','شعار الجمعية']];
-const VIDS=[];
+const GAL=[['p1.jpeg.JPG','شراكة تعاونية في خدمة الصحة - Centre Radiologie Touderte'],['p4.jpeg.jpg','أنشطة الجمعية'],['p5.jpeg.jpg','أنشطة الجمعية'],['p7.jpeg.jpg','معرض مهني دولي - Turquie'],['p9.jpeg.jpg','أنشطة الجمعية'],['p10.jpeg.jpg','أنشطة الجمعية'],['p11.jpeg.jpg','أنشطة الجمعية'],['p12.jpeg.jpg','أنشطة الجمعية'],['p15.jpeg.jpg','أنشطة الجمعية'],['P5.jpeg.jpg','أنشطة الجمعية'],['P12.jpeg.jpg','أنشطة الجمعية'],['logo.jpeg.jpg','شعار الجمعية']];
+const VIDS=['p4.jpeg.mp4'];
 const galleryHtml=()=>`<div class="gal">${GAL.map(([s,c],i)=>`<figure><img src="${s}" alt="${esc(c)}" loading="lazy" data-act="zoom" data-i="${i}" onerror="this.closest('figure').remove()"><figcaption>${esc(c)}</figcaption></figure>`).join('')}${VIDS.map(v=>`<figure><video src="${v}" controls preload="metadata" playsinline onerror="this.closest('figure').remove()"></video><figcaption>${T('galT')}</figcaption></figure>`).join('')}</div>`;
 let GI=0;function zoom(i){GI=(i+GAL.length)%GAL.length;const[s,c]=GAL[GI];dlg.className='big';dlg.innerHTML=`<img src="${s}" alt="" style="width:100%;border-radius:8px;max-height:75vh;object-fit:contain;background:#000"><p style="margin:8px 4px">${esc(c)}</p><div style="display:flex;justify-content:space-between"><button class="btn sm" data-act="nx" data-d="-1">${T('prev')}</button><button class="btn sm" data-act="nx" data-d="1">${T('next')}</button></div>`;if(!dlg.open)dlg.showModal()}
 addEventListener('keydown',e=>{if(dlg.open&&dlg.classList.contains('big')){if(e.key==='ArrowLeft')zoom(GI+1);if(e.key==='ArrowRight')zoom(GI-1)}});
