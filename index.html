@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HIRAFIYIN | جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة</title>
 <meta name="description" content="جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة: تكوين مستمر، تضامن مهني، حماية صحية، ودليل الحرفيين والموردين.">
-<link rel="icon" href="images/logo.jpeg">
+<link rel="icon" href="images/logo.jpeg.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>
@@ -100,7 +100,7 @@ const contactHtml=()=>`<p><a class="btn" href="${waLink(CFG.phone)}" target="_bl
 const cards2=a=>`<div class="grid">${a.map(([h,p])=>`<div class="card k"><div class="b"><h3>${h}</h3><p>${p}</p></div></div>`).join('')}</div>`;
 
 /* ===== المعرض ===== */
-const GAL=[['images/p1.jpg','شراكة تعاونية في خدمة الصحة - Centre Radiologie Touderte'],['images/p2.jpg','تكوين IPS Santé'],['images/p3.jpg','لقاء مؤسساتي - Borj'],['images/p4.jpg','تكوين تطبيقي بالسترات المميزة للجمعية'],['images/p5.jpg','لقاء تكويني'],['images/p6.jpg','لقاء مؤسساتي'],['images/p7.jpg','معرض مهني دولي - Turquie'],['images/p8.jpg','لقاء MIC'],['images/p9.jpg','تسليم الشواهد - ANAPEC'],['images/gallery/g1.jpeg','زيارة ميدانية'],['images/gallery/g2.jpeg','ورشة تقنية'],['images/gallery/g6.jpeg','تكوين الإسعافات الأولية'],['images/gallery/g7.jpeg','توزيع الشواهد']];
+const GAL=[['images/p1.jpeg.jpg','شراكة تعاونية في خدمة الصحة - Centre Radiologie Touderte'],['images/p2.jpg','تكوين IPS Santé'],['images/p3.jpg','لقاء مؤسساتي - Borj'],['images/p4.jpg','تكوين تطبيقي بالسترات المميزة للجمعية'],['images/p5.jpg','لقاء تكويني'],['images/p6.jpg','لقاء مؤسساتي'],['images/p7.jpg','معرض مهني دولي - Turquie'],['images/p8.jpg','لقاء MIC'],['images/p9.jpg','تسليم الشواهد - ANAPEC'],['images/gallery/g1.jpeg.jpg','زيارة ميدانية'],['images/gallery/g2.jpeg.jpg','ورشة تقنية'],['images/gallery/g6.jpeg.jpg','تكوين الإسعافات الأولية'],['images/gallery/g7.jpeg.jpg','توزيع الشواهد']];
 const VIDS=['videos/v1.mp4','videos/v2.mp4','videos/v3.mp4'];
 const galleryHtml=()=>`<div class="gal">${GAL.map(([s,c],i)=>`<figure><img src="${s}" alt="${esc(c)}" loading="lazy" data-act="zoom" data-i="${i}" onerror="this.closest('figure').remove()"><figcaption>${esc(c)}</figcaption></figure>`).join('')}${VIDS.map(v=>`<figure><video src="${v}" controls preload="metadata" playsinline onerror="this.closest('figure').remove()"></video><figcaption>${T('galT')}</figcaption></figure>`).join('')}</div>`;
 let GI=0;function zoom(i){GI=(i+GAL.length)%GAL.length;const[s,c]=GAL[GI];dlg.className='big';dlg.innerHTML=`<img src="${s}" alt="" style="width:100%;border-radius:8px;max-height:75vh;object-fit:contain;background:#000"><p style="margin:8px 4px">${esc(c)}</p><div style="display:flex;justify-content:space-between"><button class="btn sm" data-act="nx" data-d="-1">${T('prev')}</button><button class="btn sm" data-act="nx" data-d="1">${T('next')}</button></div>`;if(!dlg.open)dlg.showModal()}
