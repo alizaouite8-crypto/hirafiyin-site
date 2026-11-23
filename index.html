@@ -46,7 +46,6 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 </style>
 </head>
 <body>
-
 <header><div class="wrap"><a class="bl" href="#/"><img class="lg" src="logo.jpeg.jpg" alt="شعار الجمعية" onerror="this.remove()"><span><b>جمعية التكوين والتنمية الاجتماعية<br>لرصاصي جهة سوس ماسة</b><span class="brand">HIRAFIYIN • SOUSS MASSA</span></span></a>
 <button id="mb" aria-label="menu">☰</button>
 <nav id="nv"><a href="#/" data-i18n="home"></a><a class="hx" href="#/hirafiyin">HIRAFIYIN</a><a href="#/trainings" data-i18n="trainings"></a><a href="#/products" data-i18n="products"></a><a href="#/partners" data-i18n="partners"></a><a href="#/join" data-i18n="join"></a><a href="#/contact" data-i18n="contact"></a><a href="#/admin" data-i18n="admin" style="border:1px solid #ffffff66;border-radius:6px;padding:0 10px"></a><span class="lang"><button data-lang="ar">عربي</button><button data-lang="fr">FR</button><button data-lang="en">EN</button></span></nav></div></header>
@@ -83,7 +82,10 @@ thanks:['وصل طلبك','Demande reçue','Request received'],thanksS:['أرس�
 prev:['السابق','Précédent','Previous'],next:['التالي','Suivant','Next'],noProd:['لم تُضف منتجات بعد.','Pas encore de produits.','No products yet.']};
 const LIX={ar:0,fr:1,en:2};let LANG='ar';try{LANG=localStorage.getItem('hirafiyin_lang')||'ar'}catch(e){}
 const T=k=>(D[k]||[k,k,k])[LIX[LANG]];
-const $=s=>document.querySelector(s),app=$('#app'),dlg=$('#dlg'),sb=supabase.createClient(CFG.url,CFG.key);
+const $=s=>document.querySelector(s),app=$('#app'),dlg=$('#dlg');
+// FIX 1 - Supabase may fail on Android WebView / slow network - don't crash site
+let sb=null;
+try{ if(window.supabase) sb=supabase.createClient(CFG.url,CFG.key); }catch(e){ sb=null; }
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const waLink=(p,t)=>{p=String(p).replace(/\D/g,'');if(p.startsWith('0'))p='212'+p.slice(1);return 'https://wa.me/'+p+'?text='+encodeURIComponent(t||'')};
 const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'#',last9=p=>String(p).replace(/\D/g,'').slice(-9);
@@ -103,11 +105,11 @@ const VIDS=['p4.jpeg.mp4'];
 const galleryHtml=()=>`<div class="gal">${GAL.map(([s,c],i)=>`<figure><img src="${s}" alt="${esc(c)}" loading="lazy" data-act="zoom" data-i="${i}" onerror="this.closest('figure').remove()"><figcaption>${esc(c)}</figcaption></figure>`).join('')}${VIDS.map(v=>`<figure><video src="${v}" controls preload="metadata" playsinline onerror="this.closest('figure').remove()"></video><figcaption>${T('galT')}</figcaption></figure>`).join('')}</div>`;
 let GI=0;function zoom(i){GI=(i+GAL.length)%GAL.length;const[s,c]=GAL[GI];dlg.className='big';dlg.innerHTML=`<img src="${s}" alt="" style="width:100%;border-radius:8px;max-height:75vh;object-fit:contain;background:#000"><p style="margin:8px 4px">${esc(c)}</p><div style="display:flex;justify-content:space-between"><button class="btn sm" data-act="nx" data-d="-1">${T('prev')}</button><button class="btn sm" data-act="nx" data-d="1">${T('next')}</button></div>`;if(!dlg.open)dlg.showModal()}
 addEventListener('keydown',e=>{if(dlg.open&&dlg.classList.contains('big')){if(e.key==='ArrowLeft')zoom(GI+1);if(e.key==='ArrowRight')zoom(GI-1)}});
-async function trainingsHtml(){const today=new Date().toISOString().slice(0,10);const{data,error}=await sb.from('trainings').select('*').gte('date',today).order('date');if(error||!data.length)return`<p class="empty">${T('noTr')}</p>`;return`<div class="grid">${data.map(t=>`<article class="card">${t.image_url?`<img src="${esc(safeUrl(t.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(t.title)}</h3><div class="meta">${esc(t.date)} · ${esc(t.place)}${t.seats?' · '+esc(t.seats)+' '+T('seats'):''}</div><p>${esc(t.description)}</p><button class="btn" style="margin-top:auto;align-self:flex-start" data-act="reg" data-id="${esc(t.id)}" data-title="${esc(t.title)}">${T('reg')}</button></div></article>`).join('')}</div>`}
-async function partnersHtml(){const{data,error}=await sb.from('partners').select('*').order('created_at');if(error||!data.length)return`<p class="empty">${T('noPa')}</p>`;return`<div class="partners chips">${data.map(p=>`<a href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener">${p.logo_url?`<img src="${esc(safeUrl(p.logo_url))}" alt="" style="height:36px;max-width:90px;object-fit:contain">`:''}${esc(p.name)}</a>`).join('')}</div>`}
-async function productsHtml(){const{data,error}=await sb.from('products').select('*').eq('status','accepted').order('created_at',{ascending:false});if(error||!data.length)return`<p class="empty">${T('noPr')}</p>`;return`<div class="grid">${data.map(p=>`<article class="card">${p.image_url?`<img src="${esc(safeUrl(p.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.company)}${p.price?' · '+esc(p.price):''}</div><p>${esc(p.description)}</p>${cbtn(p.phone,'السلام عليكم، أريد الاستفسار عن المنتج: '+p.name)}</div></article>`).join('')}</div>`}
+async function trainingsHtml(){if(!sb) return `<p class="empty">${T('noTr')}</p>`; try{const today=new Date().toISOString().slice(0,10);const{data,error}=await sb.from('trainings').select('*').gte('date',today).order('date');if(error||!data.length)return`<p class="empty">${T('noTr')}</p>`;return`<div class="grid">${data.map(t=>`<article class="card">${t.image_url?`<img src="${esc(safeUrl(t.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(t.title)}</h3><div class="meta">${esc(t.date)} · ${esc(t.place)}${t.seats?' · '+esc(t.seats)+' '+T('seats'):''}</div><p>${esc(t.description)}</p><button class="btn" style="margin-top:auto;align-self:flex-start" data-act="reg" data-id="${esc(t.id)}" data-title="${esc(t.title)}">${T('reg')}</button></div></article>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noTr')}</p>`}}
+async function partnersHtml(){if(!sb) return `<p class="empty">${T('noPa')}</p>`; try{const{data,error}=await sb.from('partners').select('*').order('created_at');if(error||!data.length)return`<p class="empty">${T('noPa')}</p>`;return`<div class="partners chips">${data.map(p=>`<a href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener">${p.logo_url?`<img src="${esc(safeUrl(p.logo_url))}" alt="" style="height:36px;max-width:90px;object-fit:contain">`:''}${esc(p.name)}</a>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noPa')}</p>`}}
+async function productsHtml(){if(!sb) return `<p class="empty">${T('noPr')}</p>`; try{const{data,error}=await sb.from('products').select('*').eq('status','accepted').order('created_at',{ascending:false});if(error||!data.length)return`<p class="empty">${T('noPr')}</p>`;return`<div class="grid">${data.map(p=>`<article class="card">${p.image_url?`<img src="${esc(safeUrl(p.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.company)}${p.price?' · '+esc(p.price):''}</div><p>${esc(p.description)}</p>${cbtn(p.phone,'السلام عليكم، أريد الاستفسار عن المنتج: '+p.name)}</div></article>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noPr')}</p>`}}
 let MEM=[],PRD=[];
-async function loadDir(){const[m,p]=await Promise.all([sb.from('members').select('*').eq('status','accepted').eq('consent',true).order('created_at',{ascending:false}),sb.from('products').select('*').eq('status','accepted')]);MEM=m.data||[];PRD=p.data||[]}
+async function loadDir(){if(!sb){MEM=[];PRD=[];return} try{const[m,p]=await Promise.all([sb.from('members').select('*').eq('status','accepted').eq('consent',true).order('created_at',{ascending:false}),sb.from('products').select('*').eq('status','accepted')]);MEM=m.data||[];PRD=p.data||[]}catch(e){MEM=[];PRD=[]}}
 function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.craft||m.craft===f.craft));if(lim)l=l.slice(0,lim);if(!l.length)return`<p class="empty">${T('noMem')}</p>`;
 return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.')}</div></article>`}).join('')}</div>`}
 async function pageHome(){
@@ -121,7 +123,10 @@ ${sec('h',T('howT'),'',cards2(T('how').map(([h,p],i)=>[(i+1)+'. '+h,p]))+`<p sty
 ${sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="#/sell" style="color:var(--ink)">${T('sell')}</a></p>`)}
 ${sec('p',T('paT'),T('paS'),'<div id="pa">...</div>')}
 ${sec('k',T('ctT'),T('ctS'),contactHtml())}`;
-$('#tr').innerHTML=await trainingsHtml();$('#pr').innerHTML=await productsHtml();$('#pa').innerHTML=await partnersHtml();await loadDir();$('#hHome').innerHTML=memCards({},6)}
+try{$('#tr').innerHTML=await trainingsHtml();}catch(e){if($('#tr')) $('#tr').innerHTML=`<p class="empty">${T('noTr')}</p>`}
+try{$('#pr').innerHTML=await productsHtml();}catch(e){}
+try{$('#pa').innerHTML=await partnersHtml();}catch(e){}
+try{await loadDir(); if($('#hHome')) $('#hHome').innerHTML=memCards({},6);}catch(e){}}
 async function pageHir(){app.innerHTML=sec('hr',T('hirT'),T('hirS'),`<div class="fl"><select id="fk"><option value="">${T('all')}</option><option value="artisan">${T('artisans')}</option><option value="supplier">${T('suppliers')}</option></select><select id="fc"><option value="">${T('all')}</option>${craftOpts}</select></div><div id="hl">...</div><p style="margin-top:18px"><a class="btn" href="#/join">${T('joinReq')}</a></p>`);await loadDir();const up=()=>{$('#hl').innerHTML=memCards({kind:$('#fk').value,craft:$('#fc').value})};up();$('#fk').onchange=$('#fc').onchange=up}
 async function pageTrainings(){app.innerHTML=sec('t',T('trT'),T('trS'),'<div id="tr">...</div>')+sec('g',T('galT'),T('galS'),galleryHtml());$('#tr').innerHTML=await trainingsHtml()}
 async function pagePartners(){app.innerHTML=sec('p',T('paT'),T('paS'),'<div id="pa">...</div>');$('#pa').innerHTML=await partnersHtml()}
@@ -130,7 +135,7 @@ const pageJoin=()=>{app.innerHTML=sec('j',T('joinReq'),T('joinS2'),`<div class="
 const pageSell=()=>{app.innerHTML=sec('s',T('sell'),'',`<div class="panel"><form id="sellForm">${HONEY}<label>اسم الشركة / Entreprise<input name="company" required></label>${phoneIn()}<label>اسم المنتج / Produit<input name="name" required></label><label>الثمن / Prix<input name="price" placeholder="120 DH"></label><label>وصف / Description<textarea name="description" rows="3"></textarea></label><label>صورة / Photo<input name="image" type="file" accept="image/*"></label><button class="btn">${T('send')}</button></form></div>`)};
 const pageContact=()=>{app.innerHTML=sec('c',T('ctT'),T('ctS'),contactHtml())};
 let tab='registrations';
-async function pageAdmin(){const{data:{session}}=await sb.auth.getSession();if(!session){app.innerHTML=sec('a','دخول الإدارة','',`<div class="panel"><form id="loginForm"><label>البريد الإلكتروني<input name="email" type="email" required></label><label>كلمة المرور<input name="password" type="password" required></label><button class="btn">دخول</button></form></div>`);return}
+async function pageAdmin(){if(!sb){app.innerHTML=sec('a','دخول الإدارة','',`<p class="empty">تعذر الاتصال بقاعدة البيانات. أعد المحاولة لاحقا.</p>`);return} const{data:{session}}=await sb.auth.getSession();if(!session){app.innerHTML=sec('a','دخول الإدارة','',`<div class="panel"><form id="loginForm"><label>البريد الإلكتروني<input name="email" type="email" required></label><label>كلمة المرور<input name="password" type="password" required></label><button class="btn">دخول</button></form></div>`);return}
 const tabs=[['registrations','تسجيلات التكوينات'],['members','طلبات الانخراط'],['trainings','التكوينات'],['products','المنتجات'],['partners','الشركاء']];
 app.innerHTML=sec('a','لوحة الإدارة','',`<div class="tabs">${tabs.map(([k,l])=>`<button data-act="tab" data-k="${k}" class="${k===tab?'on':''}">${l}</button>`).join('')}<button data-act="logout">خروج</button></div><div id="adm">...</div>`);
 $('#adm').innerHTML=await({registrations:admRegs,members:admMembers,trainings:admTrainings,partners:admPartners,products:admProducts})[tab]()}
@@ -144,9 +149,15 @@ async function admPartners(){const{data}=await sb.from('partners').select('*').o
 async function admProducts(){const{data}=await sb.from('products').select('*').order('created_at',{ascending:false});if(!data?.length)return'<p class="empty">لا توجد منتجات بعد.</p>';return data.map(p=>`<div class="row"><div><b>${esc(p.name)}</b> ${stTag(p.status)}<div class="meta">${esc(p.company)} · ${esc(p.phone)}${p.price?' · '+esc(p.price):''}</div></div><div class="acts"><button class="btn sm ok" data-act="ok" data-t="products" data-id="${esc(p.id)}" data-p="${esc(p.phone)}" data-m="${esc('السلام عليكم، تم نشر منتجك "'+p.name+'" في موقع الجمعية.')}">نشر + واتساب</button><button class="btn sm no" data-act="no" data-t="products" data-id="${esc(p.id)}">رفض</button><button class="btn sm alt" data-act="del" data-t="products" data-id="${esc(p.id)}">حذف</button></div></div>`).join('')}
 async function upload(f,b='images'){if(!f||!f.size)return null;const p=Date.now()+'-'+f.name.replace(/[^\w.]/g,'');const{error}=await sb.storage.from(b).upload(p,f);if(error)throw error;return sb.storage.from(b).getPublicUrl(p).data.publicUrl}
 document.addEventListener('submit',async e=>{const f=e.target;e.preventDefault();const d=Object.fromEntries(new FormData(f));if(d.website)return;delete d.website;
-try{if(f.id==='joinForm'){d.consent=true;const{error}=await sb.from('members').insert(d);if(error)throw error;f.closest('.panel').innerHTML=doneHtml(`السلام عليكم، أنا ${d.name} (${d.kind==='artisan'?'حرفي':'مورد'}) من ${d.city}، تخصصي ${d.craft}. هاتفي ${d.phone}. أرغب في الانخراط في الجمعية.`)}
-else if(f.id==='sellForm'){const u=await upload(d.image,'products');delete d.image;if(u)d.image_url=u;const{error}=await sb.from('products').insert(d);if(error)throw error;f.closest('.panel').innerHTML=doneHtml(`السلام عليكم، أنا من شركة ${d.company}. أرسلت المنتج "${d.name}" لنشره في الموقع. هاتفي ${d.phone}.`)}
-else if(f.id==='regForm'){const t=f.dataset.title;const{error}=await sb.from('registrations').insert(d);if(error)throw error;dlg.innerHTML=doneHtml(`السلام عليكم، أنا ${d.name} من ${d.city}. سجلت في تكوين "${t}". هاتفي ${d.phone}.`)}
+try{
+if(f.id==='joinForm'){
+  const msg=`السلام عليكم، أنا ${d.name} (${d.kind==='artisan'?'حرفي':'مورد'}) من ${d.city}، تخصصي ${d.craft}. هاتفي ${d.phone}. أرغب في الانخراط في الجمعية.`;
+  // FIX 2 - ila Supabase ma-khdemch, sifto l WhatsApp nichan - ma-y-di3ch talab
+  if(!sb){ window.open(waLink(CFG.phone,msg),'_blank'); f.closest('.panel').innerHTML=doneHtml(msg); return; }
+  d.consent=true;const{error}=await sb.from('members').insert(d);if(error)throw error;f.closest('.panel').innerHTML=doneHtml(msg)
+}
+else if(f.id==='sellForm'){if(!sb) throw new Error('no db'); const u=await upload(d.image,'products');delete d.image;if(u)d.image_url=u;const{error}=await sb.from('products').insert(d);if(error)throw error;f.closest('.panel').innerHTML=doneHtml(`السلام عليكم، أنا من شركة ${d.company}. أرسلت المنتج "${d.name}" لنشره في الموقع. هاتفي ${d.phone}.`)}
+else if(f.id==='regForm'){if(!sb) throw new Error('no db'); const t=f.dataset.title;const{error}=await sb.from('registrations').insert(d);if(error)throw error;dlg.innerHTML=doneHtml(`السلام عليكم، أنا ${d.name} من ${d.city}. سجلت في تكوين "${t}". هاتفي ${d.phone}.`)}
 else if(f.id==='loginForm'){const{error}=await sb.auth.signInWithPassword(d);if(error)throw error;route()}
 else if(f.dataset.add){const u=await upload(d.image);delete d.image;if(u)d.image_url=u;if(f.dataset.add==='partners'&&u){d.logo_url=u;delete d.image_url}if(d.seats==='')delete d.seats;const{error}=await sb.from(f.dataset.add).insert(d);if(error)throw error;toast('تمت الإضافة');route()}}
 catch(err){const m=String(err.message||'');toast(/too many/i.test(m)?'محاولات كثيرة، أعد المحاولة لاحقا':/duplicate|unique/i.test(m)?'هذا الرقم مسجل من قبل':'خطأ: '+(m||'حاول مرة أخرى'))}});
@@ -157,14 +168,26 @@ if(e.target.closest('nav a'))$('#nv').classList.remove('open');
 const b=e.target.closest('[data-act]');if(!b)return;const{act,t,id}=b.dataset;
 if(act==='zoom')zoom(+b.dataset.i);else if(act==='nx')zoom(GI+ +b.dataset.d);
 else if(act==='reg'){dlg.className='';dlg.innerHTML=`<h2>${esc(b.dataset.title)}</h2><form id="regForm" data-title="${esc(b.dataset.title)}"><input type="hidden" name="training_id" value="${esc(id)}">${personFields()}<button class="btn">${T('regOk')}</button></form>`;dlg.showModal()}
-else if(act==='tab'){tab=b.dataset.k;route()}else if(act==='logout'){await sb.auth.signOut();route()}
+else if(act==='tab'){tab=b.dataset.k;route()}else if(act==='logout'){if(sb) await sb.auth.signOut();route()}
 else if(act==='del-refused'&&confirm('مسح جميع الطلبات المرفوضة؟')){const{error}=await sb.from('members').delete().eq('status','refused');toast(error?'خطأ: '+error.message:'تم مسح المرفوضين');route()}
 else if(act==='ok'||act==='no'){if(act==='ok')window.open(waLink(b.dataset.p,b.dataset.m),'_blank');const{error}=await sb.from(t).update({status:act==='ok'?'accepted':'refused'}).eq('id',id);toast(error?'خطأ: '+error.message:'تم التحديث');route()}
 else if(act==='del'&&confirm('حذف نهائي؟')){const{error}=await sb.from(t).delete().eq('id',id);toast(error?'خطأ: '+error.message:'تم الحذف');route()}});
 dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
-function route(){const h=(location.hash||'#/').slice(2);({'':pageHome,hirafiyin:pageHir,trainings:pageTrainings,partners:pagePartners,products:pageProducts,sell:pageSell,join:pageJoin,contact:pageContact,admin:pageAdmin}[h]||pageHome)();document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#/'+h||(h===''&&a.getAttribute('href')==='#/')));window.scrollTo(0,0)}
+function route(){
+  const h=(location.hash||'#/').slice(2);
+  try{
+    const pages={'':pageHome,hirafiyin:pageHir,trainings:pageTrainings,partners:pagePartners,products:pageProducts,sell:pageSell,join:pageJoin,contact:pageContact,admin:pageAdmin};
+    const fn=pages[h]||pageHome;
+    const r=fn();
+    if(r && r.catch) r.catch(()=>{ if(h!=='join') pageJoin(); });
+  }catch(e){ pageJoin(); }
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#/'+h||(h===''&&a.getAttribute('href')==='#/')));
+  window.scrollTo(0,0)
+}
 function applyLang(){document.documentElement.lang=LANG;document.documentElement.dir=LANG==='ar'?'rtl':'ltr';document.querySelectorAll('[data-lang]').forEach(b=>b.classList.toggle('on',b.dataset.lang===LANG));document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=T(el.dataset.i18n)});route()}
 addEventListener('hashchange',route);applyLang();
+// FIX 3 - ila l-hash t-qta3 f WhatsApp Android, 3awd 7awl
+setTimeout(()=>{ if(!app.innerHTML.trim()) route(); },800);
 </script>
 </body>
 </html>
