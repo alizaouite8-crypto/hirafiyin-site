@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>طلب الانخراط - HIRAFIYIN</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <style>body{margin:0;font-family:Tahoma,sans-serif;background:#f4f7fa;color:#13263b}header{background:#0a2540;color:#fff;padding:14px;text-align:center;font-weight:800} .box{max-width:520px;margin:20px auto;background:#fff;padding:20px;border-radius:12px} label{display:block;margin:12px 0 4px;font-weight:700} input,select{width:100%;padding:12px;border:1px solid #d9e1e9;border-radius:8px;font-size:16px;box-sizing:border-box} .btn{display:block;width:100%;margin-top:18px;background:#b87333;color:#fff;border:0;padding:14px;border-radius:8px;font-size:18px;font-weight:800} a{color:#0a2540}</style>
 </head>
 <body>
@@ -13,7 +14,7 @@
 <p style="color:#5b6b7c">تراجع الجمعية طلبك وتتصل بك عبر واتساب.</p>
 <form onsubmit="sendWA(event)">
 <label>أنا</label>
-<select id="kind"><option value="حرفي">حرفي</option><option value="مورد / شركة">مورد / شركة</option></select>
+<select id="kind"><option value="artisan">حرفي</option><option value="supplier">مورد / شركة</option></select>
 <label>الاسم الكامل</label>
 <input id="name" required placeholder="مثال: محمد العلوي">
 <label>رقم الهاتف (واتساب)</label>
@@ -23,15 +24,35 @@
 <label>التخصص / المجال</label>
 <select id="craft"><option>السباكة</option><option>الكهرباء</option><option>النجارة</option><option>البناء</option><option>الصباغة</option><option>التبريد والتكييف</option><option>أخرى</option></select>
 <label><input type="checkbox" required style="width:auto"> أوافق على ظهور اسمي ومدينتي ورقم هاتفي في دليل الجمعية بعد قبول طلبي.</label>
-<button class="btn">أرسل طلب الانخراط عبر واتساب</button>
+<button class="btn" id="btnSend">أرسل طلب الانخراط</button>
+<p id="msg" style="text-align:center;color:#1f7a4d;font-weight:700"></p>
 </form>
 <p style="text-align:center"><a href="https://hirafiyin-soussema.vercel.app">← الرجوع للموقع</a></p>
 </div>
 <script>
-function sendWA(e){
+var CFG_URL='https://oldwrxirxrshwvyqvpxp.supabase.co';
+var CFG_KEY='sb_publishable_Uv5HMjCc7ZgI4S7BlyjaFQ__ACuR_DX';
+var sb=null;
+try{ sb=supabase.createClient(CFG_URL,CFG_KEY); }catch(e){ sb=null; }
+async function sendWA(e){
  e.preventDefault();
- var msg = "السلام عليكم، أنا " + document.getElementById('name').value + " (" + document.getElementById('kind').value + ") من " + document.getElementById('city').value + "، تخصصي " + document.getElementById('craft').value + ". هاتفي " + document.getElementById('phone').value + ". أرغب في الانخراط في الجمعية.";
- window.location.href = "https://wa.me/212600213299?text=" + encodeURIComponent(msg);
+ var btn=document.getElementById('btnSend'); btn.textContent='... جاري الإرسال'; btn.disabled=true;
+ var kind=document.getElementById('kind').value;
+ var name=document.getElementById('name').value;
+ var phone=document.getElementById('phone').value;
+ var city=document.getElementById('city').value;
+ var craft=document.getElementById('craft').value;
+ var kindTxt = kind==='artisan' ? 'حرفي' : 'مورد';
+ // 1 - سجل في Supabase باش يبان في Admin
+ if(sb){
+   try{
+     await sb.from('members').insert({name:name, phone:phone, city:city, craft:craft, kind:kind, consent:true});
+   }catch(err){ console.log('Supabase error',err); }
+ }
+ // 2 - سيفط ل WhatsApp
+ var msg = "السلام عليكم، أنا " + name + " (" + kindTxt + ") من " + city + "، تخصصي " + craft + ". هاتفي " + phone + ". أرغب في الانخراط في الجمعية.";
+ document.getElementById('msg').textContent='تم تسجيل طلبك! غادي نحولك لواتساب...';
+ setTimeout(function(){ window.location.href = "https://wa.me/212600213299?text=" + encodeURIComponent(msg); },800);
 }
 </script>
 </body>
