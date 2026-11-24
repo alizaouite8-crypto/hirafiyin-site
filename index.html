@@ -18,7 +18,7 @@ nav{display:flex;gap:14px;align-items:center;font-size:.92rem}nav a{text-decorat
 .lang{display:flex;gap:3px;background:#ffffff22;border-radius:99px;padding:3px}.lang button{border:0;background:transparent;color:#fff;font:700 .8rem Cairo;cursor:pointer;padding:3px 9px;border-radius:99px}.lang button.on{background:#fff;color:var(--navy)}
 #mb{display:none;background:transparent;border:1px solid #ffffff66;color:#fff;font-size:1.3rem;border-radius:8px;padding:2px 12px;cursor:pointer}
 @media(max-width:960px){#mb{display:block}nav{display:none;width:100%;flex-direction:column;align-items:flex-start;padding:8px 0 12px}nav.open{display:flex}}
-.hero{background:var(--navy);color:#fff;padding:72px 0 64px;border-bottom:6px solid var(--cu)}
+.hero{background:var(--navy);color:#fff;padding:72px 0 64px;border-bottom:6px solid var(--cu);overflow:hidden}
 .hero .wrap{display:grid;gap:30px;align-items:center}@media(min-width:850px){.hero .wrap{grid-template-columns:1.25fr .75fr}}
 .hero h1{font-size:clamp(2rem,6vw,3.5rem);line-height:1.2;margin:0 0 14px;font-weight:900}.an{font-weight:800;color:var(--gold);margin:0 0 10px;letter-spacing:1px}.hero p{max-width:56ch;opacity:.92;margin:0 0 22px;font-size:1.05rem}
 .hl{width:100%;max-width:320px;border-radius:24px;background:#fff;padding:14px;justify-self:center;box-shadow:0 20px 50px #0008}
@@ -56,22 +56,25 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .chip-btn.on{background:var(--navy)!important;color:#fff!important}
 .head-right{display:flex;align-items:center;gap:8px}
 .clicks{font-size:.85rem;color:var(--mut);font-weight:700}
-/* KHANAT SGHAR - JOJ F SEF */
 .craft-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .craft-grid .card{border-radius:10px}
 .craft-grid .craft-card .b{padding:12px 6px;gap:5px}
 .craft-grid .craft-card h3{font-size:.95rem;line-height:1.3}
 .craft-grid .craft-card .btn.sm{padding:4px 8px;font-size:.78rem;width:100%;text-align:center}
 @media(min-width:700px){.craft-grid{grid-template-columns:repeat(4,1fr)}}
-/* TSawer Hirafiyin - kay-douzo 3la lisser - te7t l-kelma l-kbira */
-.hirafi-strip{overflow:hidden;white-space:nowrap;margin:6px 0 16px;padding:4px 0;direction:ltr}
-.hirafi-track{display:inline-flex;gap:12px;animation:moveLeft 18s linear infinite;will-change:transform}
-.hirafi-strip:hover .hirafi-track{animation-play-state:paused}
-.hirafi-track figure{flex:0 0 auto;margin:0;width:110px;text-align:center;color:#fff}
-.hirafi-track figure img{width:110px;height:140px;object-fit:cover;border-radius:14px;border:3px solid #f0c58f;background:#fff;display:block}
-.hirafi-track figcaption{font-weight:800;font-size:.82rem;line-height:1.3;margin-top:4px}
-.hirafi-track figcaption small{display:block;color:#f0c58f;font-weight:700}
-@keyframes moveLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* TSawer - f blassathom - kay-t7erko f blassathom */
+.hirafi-strip{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:1100px;margin:14px auto 0;padding:0 20px}
+.hirafi-strip figure{margin:0;width:90px;text-align:center;color:#fff;animation:floatY 2.5s ease-in-out infinite}
+.hirafi-strip figure:nth-child(2){animation-delay:.4s}
+.hirafi-strip figure:nth-child(3){animation-delay:.8s}
+.hirafi-strip figure:nth-child(4){animation-delay:1.2s}
+.hirafi-strip figure img{width:90px;height:110px;object-fit:cover;border-radius:12px;border:2px solid #f0c58f;background:#fff;display:block;animation:wiggle 2.5s ease-in-out infinite}
+.hirafi-strip figure:nth-child(4) img{animation:sparkShake .6s ease-in-out infinite}
+.hirafi-strip figcaption{font-weight:800;font-size:.75rem;line-height:1.3;margin-top:4px}
+.hirafi-strip figcaption small{display:block;color:#f0c58f;font-weight:700}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(1.5deg)}75%{transform:rotate(-1.5deg)}}
+@keyframes sparkShake{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px) scale(1.02)}}
 </style>
 </head>
 <body>
@@ -174,20 +177,15 @@ function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.cra
 return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div><span class="clicks">👁 ${clicksFor(m.phone)} clika</span>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.',m.name,m.kind)}</div></article>`}).join('')}</div>`}
 function craftCount(c){return MEM.filter(m=>m.craft===c).length}
 function craftBoxesHtml(){return `<div class="craft-grid">${CRAFTS.map(c=>{return `<a href="#/hirafiyin" data-goto-craft="${c}" class="craft-card"><div class="card k"><div class="b"><h3>حرفيي ${c}</h3><span class="btn sm">حرفيي ${c}</span></div></div></a>`}).join('')}</div>`}
-// HIRAFIYIN STRIP - TSawer kay-douzo
-const HIRAFI_STRIP=`<div class="hirafi-strip"><div class="hirafi-track">
-<figure><img src="hirafi1.jpg" alt="السباكة" onerror="this.style.display='none'"><figcaption>السباكة<small>🔧 مطرقة + ساروت</small></figcaption></figure>
-<figure><img src="hirafi2.jpg" alt="الكهرباء" onerror="this.style.display='none'"><figcaption>الكهرباء<small>🪛 Tournevis</small></figcaption></figure>
-<figure><img src="hirafi3.jpg" alt="النجارة" onerror="this.style.display='none'"><figcaption>النجارة<small>🔨 Marteau</small></figcaption></figure>
-<figure><img src="hirafi4.jpg" alt="اللحام" onerror="this.style.display='none'"><figcaption>اللحام<small>🔥 Chalumeau</small></figcaption></figure>
-<figure><img src="hirafi1.jpg" alt="السباكة" onerror="this.style.display='none'"><figcaption>السباكة<small>🔧 مطرقة + ساروت</small></figcaption></figure>
-<figure><img src="hirafi2.jpg" alt="الكهرباء" onerror="this.style.display='none'"><figcaption>الكهرباء<small>🪛 Tournevis</small></figcaption></figure>
-<figure><img src="hirafi3.jpg" alt="النجارة" onerror="this.style.display='none'"><figcaption>النجارة<small>🔨 Marteau</small></figcaption></figure>
-<figure><img src="hirafi4.jpg" alt="اللحام" onerror="this.style.display='none'"><figcaption>اللحام<small>🔥 Chalumeau</small></figcaption></figure>
-</div></div>`;
+const HIRAFI_STRIP=`<div class="hirafi-strip">
+<figure><img src="hirafi1.jpg" alt="السباكة"><figcaption>السباكة<small>🔧 مطرقة + ساروت</small></figcaption></figure>
+<figure><img src="hirafi2.jpg" alt="الكهرباء"><figcaption>الكهرباء<small>🪛 Tournevis</small></figcaption></figure>
+<figure><img src="hirafi3.jpg" alt="النجارة"><figcaption>النجارة<small>🔨 Marteau</small></figcaption></figure>
+<figure><img src="hirafi4.jpg" alt="اللحام"><figcaption>اللحام<small>🔥 Chalumeau</small></figcaption></figure>
+</div>`;
 async function pageHome(){
 await loadDir(); await loadClickCounts();
-app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1>${HIRAFI_STRIP}<p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
+app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div>${HIRAFI_STRIP}</div>
 ${sec('about',T('aboutT'),T('aboutS'),`<div class="about-box"><span style="color:var(--gold);font-size:13px;font-weight:800;letter-spacing:2px;">HIRAFIYIN • SOUSS MASSA</span><h3>${T('aboutS')}</h3><p>${T('aboutP')}</p><a href="#/contact" class="btn" style="margin-top:22px;">› ${T('readMore')}</a></div>`)}
 ${sec('sante','شراكة تعاونية في خدمة الصحة','Un Partenariat au Service de la Santé — Centre Radiologie Touderte • Aït Melloul',`<div class="health"><img src="p1.jpeg.JPG" alt="" loading="lazy" onerror="this.src='logo.jpeg.jpg'"><div class="b"><span class="badge">Partenariat • شراكة</span><h3 style="margin:0 0 8px">الفحوصات الطبية لأعضاء الجمعية</h3><p style="color:var(--mut)">يستفيد أعضاء HIRAFIYIN من فحوصات طبية بشراكة مع مركز الأشعة تودرت - أيت ملول:</p><ul style="margin:10px 0;line-height:2"><li><b>IRM</b> - الرنين المغناطيسي</li><li><b>Radiologie</b> - الأشعة السينية</li><li><b>Échographie</b> - الفحص بالصدى</li><li><b>Mammographie</b> - فحص الثدي</li></ul><a class="btn" href="join.html">${T('joinReq')}</a></div></div>`)}
 ${sec('c',T('craftsT'),T('craftsS'),craftBoxesHtml())}
