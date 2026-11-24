@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة الإدارة - HIRAFIYIN</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>body{margin:0;font-family:Tahoma,sans-serif;background:#f4f7fa;color:#13263b}header{background:#0a2540;color:#fff;padding:14px;text-align:center;font-weight:800} .wrap{max-width:900px;margin:16px auto;padding:0 12px} .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px} .card{background:#fff;padding:14px;border-radius:12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)} .card b{font-size:28px;display:block;color:#0a2540} .card span{color:#5b6b7c;font-size:13px} .card.green b{color:#1f7a4d} .card.orange b{color:#b87333} .card.dark{background:#0a2540} .card.dark b,.card.dark span{color:#fff} .card.wa{background:#25D366} .card.wa b,.card.wa span{color:#fff} .box{background:#fff;padding:14px;border-radius:12px;margin-bottom:14px} .row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding:10px 0} button{border:0;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer} .ok{background:#1f7a4d;color:#fff} .no{background:#e11d48;color:#fff} .waBtn{background:#25D366;color:#fff} .tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap} .tabs button{background:#fff;color:#0a2540} .tabs button.active{background:#0a2540;color:#fff} @media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}</style>
+</head>
+<body>
+<header>HIRAFIYIN • لوحة الإدارة</header>
+<div class="wrap">
+<div class="stats">
+  <div class="card dark"><b id="cVisits">0</b><span>إجمالي الزوار - دخلو للموقع</span></div>
+  <div class="card wa"><b id="cToday">0</b><span>زوار اليوم</span></div>
+  <div class="card"><b id="cTotal">0</b><span>إجمالي طلبات الانخراط</span></div>
+  <div class="card orange"><b id="cPending">0</b><span>في الانتظار</span></div>
+</div>
+<div class="stats">
+  <div class="card green"><b id="cAccepted">0</b><span>مقبول - باين ف الموقع</span></div>
+  <div class="card"><b id="cArtisan">0</b><span>حرفيين</span></div>
+  <div class="card"><b id="cSupplier">0</b><span>موردين</span></div>
+  <div class="card"><b id="cProducts">0</b><span>المنتجات</span></div>
+</div>
+<div class="tabs"><button id="tabM" class="active" onclick="showTab('members')">الأعضاء</button><button id="tabP" onclick="showTab('products')">المنتجات</button><button onclick="loadAll()">🔄 تحديث</button></div>
+<div id="membersBox" class="box"><h3>الأعضاء</h3><div id="membersList">... جاري التحميل</div></div>
+<div id="productsBox" class="box" style="display:none"><h3>المنتجات</h3><div id="productsList">... جاري التحميل</div></div>
+<p style="text-align:center"><a href="https://alizaouite8-crypto.github.io">← الرجوع للموقع</a></p>
+</div>
+<script>
+var sb=supabase.createClient('https://oldwrxirxrshwvyqvpxp.supabase.co','sb_publishable_Uv5HMjCc7ZgI4S7BlyjaFQ__ACuR_DX');
+var allMembers=[], allProducts=[];
+function showTab(t){ document.getElementById('membersBox').style.display=t==='members'?'block':'none'; document.getElementById('productsBox').style.display=t==='products'?'block':'none'; document.getElementById('tabM').className=t==='members'?'active':''; document.getElementById('tabP').className=t==='products'?'active':''; }
+async function loadAll(){
+  var m=await sb.from('members').select('*').order('created_at',{ascending:false}); allMembers=m.data||[];
+  var p=await sb.from('products').select('*').order('created_at',{ascending:false}); allProducts=p.data||[];
+  var v=await sb.from('visits').select('created_at'); var visits=v.data||[];
+  document.getElementById('cVisits').textContent=visits.length;
+  var today=new Date().toISOString().slice(0,10);
+  document.getElementById('cToday').textContent=visits.filter(x=>(x.created_at||'').slice(0,10)===today).length;
+  document.getElementById('cTotal').textContent=allMembers.length;
+  document.getElementById('cPending').textContent=allMembers.filter(x=>!x.status||x.status==='pending').length;
+  document.getElementById('cAccepted').textContent=allMembers.filter(x=>x.status==='accepted').length;
+  document.getElementById('cArtisan').textContent=allMembers.filter(x=>x.kind==='artisan').length;
+  document.getElementById('cSupplier').textContent=allMembers.filter(x=>x.kind==='supplier').length;
+  document.getElementById('cProducts').textContent=allProducts.length;
+  renderMembers(); renderProducts();
+}
+function renderMembers(){ var el=document.getElementById('membersList'); if(!allMembers.length){el.innerHTML='ما كاين حتى واحد';return;} el.innerHTML=allMembers.map(function(x){ var st=x.status==='accepted'?'✅ مقبول':'⏳ في الانتظار'; return '<div class="row"><div><b>'+(x.name||'')+'</b><br><small>'+(x.city||'')+' • '+(x.craft||'')+' • '+(x.phone||'')+'<br>'+st+'</small></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="ok" onclick="setMember(\''+x.id+'\',\'accepted\')">قبول</button><button class="waBtn" onclick="waMember(\''+x.phone+'\',\''+x.name+'\')">واتساب</button><button class="no" onclick="delMember(\''+x.id+'\')">حذف</button></div></div>'; }).join(''); }
+function renderProducts(){ var el=document.getElementById('productsList'); if(!allProducts.length){el.innerHTML='ما كاين حتى منتج';return;} el.innerHTML=allProducts.map(function(x){ var st=x.status==='accepted'?'✅ مقبول':'⏳ في الانتظار'; return '<div class="row"><div><b>'+(x.name||x.title||'')+'</b><br><small>'+(x.supplier_name||'')+' • '+(x.city||'')+' • '+(x.price||'')+' درهم<br>'+st+'</small></div><div style="display:flex;gap:6px"><button class="ok" onclick="setProduct(\''+x.id+'\',\'accepted\')">قبول</button><button class="no" onclick="delProduct(\''+x.id+'\')">حذف</button></div></div>'; }).join(''); }
+async function setMember(id,st){ await sb.from('members').update({status:st}).eq('id',id); loadAll(); }
+async function delMember(id){ if(!confirm('تحذف هاد العضو؟')) return; await sb.from('members').delete().eq('id',id); loadAll(); }
+async function setProduct(id,st){ await sb.from('products').update({status:st}).eq('id',id); loadAll(); }
+async function delProduct(id){ if(!confirm('تحذف هاد المنتج؟')) return; await sb.from('products').delete().eq('id',id); loadAll(); }
+function waMember(phone,name){ var n=(phone||'').replace(/[^0-9]/g,''); if(n.startsWith('06')) n='212'+n.slice(1); window.open('https://wa.me/'+n+'?text='+encodeURIComponent('السلام عليكم '+name+'، تم قبول طلبك في جمعية HIRAFIYIN')); }
+loadAll();
+</script>
+</body>
+</html>
