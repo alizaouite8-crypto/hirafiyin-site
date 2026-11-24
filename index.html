@@ -45,6 +45,9 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .topbar{background:#000;color:#f0c58f;text-align:center;font-size:13px;font-weight:800;padding:7px 10px}
 .adminStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.adminStats div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}.adminStats b{font-size:1.8rem;display:block;color:var(--navy)}.adminStats span{font-size:.85rem;color:var(--mut)}
 @media(max-width:600px){.adminStats{grid-template-columns:repeat(2,1fr)}}
+.about-box{background:var(--navy);border-radius:16px;padding:30px 22px;text-align:center;border-bottom:6px solid var(--cu)}
+.about-box h3{color:#fff;font-size:1.6rem;margin:10px 0;font-weight:900}
+.about-box p{color:#EAF2F8;font-size:1.05rem;line-height:2;max-width:750px;margin:0 auto}
 </style>
 </head>
 <body>
@@ -63,6 +66,10 @@ heroT:['حرفتك تستحق شبكة تليق بها.','Votre métier mérite 
 heroS:['نجمع الحرفيين والموردين في جهة سوس ماسة حول التكوين المستمر والتضامن المهني والحماية الصحية.','Artisans et fournisseurs de Souss-Massa réunis autour de la formation, de la solidarité et de la protection santé.','Artisans and suppliers of Souss-Massa united around training, solidarity and health protection.'],
 joinA:['انضم كحرفي','Adhérer comme artisan','Join as artisan'],joinS:['انضم كمورد','Adhérer comme fournisseur','Join as supplier'],seeH:['دليل الأعضاء','Annuaire des membres','Members directory'],
 st1:['حرفي منخرط','artisans membres','member artisans'],st2:['تكوين منظم','formations','trainings'],st3:['شريك مؤسساتي','partenaires','partners'],
+aboutT:['عن الجمعية','À propos','About Us'],
+aboutS:['رسالة نؤمن بها، وأثر نزرعه','Une mission, un impact','A mission we believe in'],
+aboutP:['جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة، جمعية تجمع الحرفيين والموردين في جهة سوس ماسة حول التكوين المستمر والتضامن المهني والحماية الصحية. نعمل للنهوض بقطاع الحرف عبر استقطاب ومساندة المهنيين، وتوفير البرامج التدريبية والأدوات والمعارف اللازمة، وتقديم الخدمات المساندة المستدامة، وتكريم المنجزات الفنية، وتسهيل طرق التواصل بين المهنيين.','Association de formation et de développement social des plombiers de Souss-Massa, réunissant artisans et fournisseurs autour de la formation continue, de la solidarité et de la protection santé.','Training and Social Development Association for Plumbers of Souss-Massa, bringing together artisans and suppliers around continuous training, professional solidarity and health protection.'],
+readMore:['قراءة المزيد','Lire la suite','Read More'],
 craftsT:['حرف البناء والصيانة في شبكة واحدة','Les métiers du bâtiment, un seul réseau','Building trades, one network'],
 whyT:['ما تقدمه الجمعية لأعضائها','Ce que nous offrons','What we offer'],
 why:[[['تكوين مستمر','دورات تطبيقية تواكب التقنيات الجديدة.'],['تضامن مهني','شبكة دعم بين الأعضاء.'],['حماية صحية','شراكات طبية للأعضاء بأيت ملول.'],['فرص عمل','ظهور أكبر أمام الزبائن والمقاولات.']],[['Formation continue','Ateliers pratiques sur les nouvelles techniques.'],['Solidarité','Un réseau d’entraide entre membres.'],['Protection santé','Partenariats médicaux à Aït Melloul.'],['Opportunités','Plus de visibilité auprès des clients.']],[['Continuous training','Hands-on workshops on new techniques.'],['Solidarity','A support network among members.'],['Health protection','Medical partnerships in Aït Melloul.'],['Opportunities','More visibility with clients.']]],
@@ -87,7 +94,6 @@ const T=k=>(D[k]||[k,k,k])[LIX[LANG]];
 const $=s=>document.querySelector(s),app=$('#app'),dlg=$('#dlg');
 let sb=null;
 try{ if(window.supabase) sb=supabase.createClient(CFG.url,CFG.key); }catch(e){ sb=null; }
-// === ZOWAR - KAY-HSEB KOL DAKHLA ===
 try{
   if(sb && !sessionStorage.getItem('counted')){
     sb.from('visits').insert({page: location.hash || '/'});
@@ -122,6 +128,7 @@ function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.cra
 return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.')}</div></article>`}).join('')}</div>`}
 async function pageHome(){
 app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
+${sec('about',T('aboutT'),T('aboutS'),`<div class="about-box"><span style="color:var(--gold);font-size:13px;font-weight:800;letter-spacing:2px;">HIRAFIYIN • SOUSS MASSA</span><h3>${T('aboutS')}</h3><p>${T('aboutP')}</p><a href="#/contact" class="btn" style="margin-top:22px;">› ${T('readMore')}</a></div>`)}
 ${sec('sante','شراكة تعاونية في خدمة الصحة','Un Partenariat au Service de la Santé — Centre Radiologie Touderte • Aït Melloul',`<div class="health"><img src="p1.jpeg.JPG" alt="" loading="lazy" onerror="this.src='logo.jpeg.jpg'"><div class="b"><span class="badge">Partenariat • شراكة</span><h3 style="margin:0 0 8px">الفحوصات الطبية لأعضاء الجمعية</h3><p style="color:var(--mut)">يستفيد أعضاء HIRAFIYIN من فحوصات طبية بشراكة مع مركز الأشعة تودرت - أيت ملول:</p><ul style="margin:10px 0;line-height:2"><li><b>IRM</b> - الرنين المغناطيسي</li><li><b>Radiologie</b> - الأشعة السينية</li><li><b>Échographie</b> - الفحص بالصدى</li><li><b>Mammographie</b> - فحص الثدي</li></ul><a class="btn" href="join.html">${T('joinReq')}</a></div></div>`)}
 ${sec('c',T('craftsT'),'',`<div class="chips">${CRAFTS.map(c=>`<span>${c}</span>`).join('')}</div>`)}
 ${sec('w',T('whyT'),'',cards2(T('why')))}
@@ -145,7 +152,6 @@ const pageContact=()=>{app.innerHTML=sec('c',T('ctT'),T('ctS'),contactHtml())};
 let tab='registrations';
 async function pageAdmin(){if(!sb){app.innerHTML=sec('a','دخول الإدارة','',`<p class="empty">تعذر الاتصال بقاعدة البيانات. أعد المحاولة لاحقا.</p>`);return} const{data:{session}}=await sb.auth.getSession();if(!session){app.innerHTML=sec('a','دخول الإدارة','',`<div class="panel"><form id="loginForm"><label>البريد الإلكتروني<input name="email" type="email" required></label><label>كلمة المرور<input name="password" type="password" required></label><button class="btn">دخول</button></form></div>`);return}
 const tabs=[['registrations','تسجيلات التكوينات'],['members','طلبات الانخراط'],['trainings','التكوينات'],['products','المنتجات'],['partners','الشركاء']];
-// === STATS ZOWAR ===
 let vTotal=0,vToday=0,mTotal=0,pTotal=0;
 try{
   const v=await sb.from('visits').select('created_at');
