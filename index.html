@@ -49,17 +49,18 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .about-box h3{color:#fff;font-size:1.6rem;margin:10px 0;font-weight:900}
 .about-box p{color:#EAF2F8;font-size:1.05rem;line-height:2;max-width:750px;margin:0 auto}
 .craft-card{cursor:pointer;text-decoration:none}
-.craft-card .b{text-align:center;padding:22px 14px}
-.craft-card h3{font-size:1.3rem}
-.craft-card .cnt{color:var(--mut);margin:6px 0}
+.craft-card .b{text-align:center;padding:24px 14px}
+.craft-card h3{font-size:1.35rem}
+.craft-card .cnt{color:var(--mut);margin:8px 0}
 .chip-btn{cursor:pointer}
 .chip-btn.on{background:var(--navy)!important;color:#fff!important}
+.head-right{display:flex;align-items:center;gap:8px}
 </style>
 </head>
 <body>
 <header><div class="wrap"><a class="bl" href="#/"><img class="lg" src="logo.jpeg.jpg" alt="شعار الجمعية" onerror="this.remove()"><span><b>جمعية التكوين والتنمية الاجتماعية<br>لرصاصي جهة سوس ماسة</b><span class="brand">HIRAFIYIN • SOUSS MASSA</span></span></a>
-<button id="mb" aria-label="menu">☰</button>
-<nav id="nv"><a href="#/" data-i18n="home"></a><a class="hx" href="#/hirafiyin">HIRAFIYIN</a><a href="#/trainings" data-i18n="trainings"></a><a href="#/products" data-i18n="products"></a><a href="#/partners" data-i18n="partners"></a><a href="join.html" data-i18n="join"></a><a href="#/contact" data-i18n="contact"></a><a href="#/admin" data-i18n="admin" style="border:1px solid #ffffff66;border-radius:6px;padding:0 10px"></a><span class="lang"><button data-lang="ar">عربي</button><button data-lang="fr">FR</button><button data-lang="en">EN</button></span></nav></div></header>
+<div class="head-right"><span class="lang"><button data-lang="ar">عربي</button><button data-lang="fr">FR</button><button data-lang="en">EN</button></span><button id="mb" aria-label="menu">☰</button></div>
+<nav id="nv"><a href="#/" data-i18n="home"></a><a class="hx" href="#/hirafiyin">HIRAFIYIN</a><a href="#/trainings" data-i18n="trainings"></a><a href="#/products" data-i18n="products"></a><a href="#/partners" data-i18n="partners"></a><a href="join.html" data-i18n="join"></a><a href="#/contact" data-i18n="contact"></a><a href="#/admin" data-i18n="admin" style="border:1px solid #ffffff66;border-radius:6px;padding:0 10px"></a></nav></div></header>
 <main id="app"></main>
 <footer><div class="wrap"><span style="display:flex;align-items:center;gap:10px"><img class="lg" style="height:42px;width:42px" src="logo.jpeg.jpg" alt="" onerror="this.remove()">HIRAFIYIN · جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة</span><span><a id="fw" href="#">واتساب</a> · <a id="fe" href="#"></a></span></div><div style="max-width:1100px;margin:12px auto 0;padding:12px 20px 0;border-top:1px solid #ffffff22;text-align:left" dir="ltr"><span style="font-size:14px;color:#f0c58f;font-weight:800">Développé par Abdelle</span></div></footer>
 <dialog id="dlg"></dialog><div id="toast" role="status"></div>
@@ -67,7 +68,6 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 const CFG={url:'https://oldwrxirxrshwvyqvpxp.supabase.co',key:'sb_publishable_Uv5HMjCc7ZgI4S7BlyjaFQ__ACuR_DX',phone:'0600213299',email:'lahcenassoughay@gmail.com'};
 const STATS=['+120','+15','+10'];
 const CRAFTS=['السباكة','الكهرباء','النجارة','البناء','الصباغة','التبريد والتكييف'];
-const CRAFT_ICONS={'السباكة':'🔧','الكهرباء':'⚡','النجارة':'🪚','البناء':'🧱','الصباغة':'🎨','التبريد والتكييف':'❄️'};
 const D={home:['الرئيسية','Accueil','Home'],trainings:['التكوينات','Formations','Trainings'],products:['المنتجات','Produits','Products'],partners:['الشركاء','Partenaires','Partners'],join:['انخرط','Adhérer','Join'],contact:['تواصل','Contact','Contact'],admin:['الإدارة','Admin','Admin'],
 heroT:['حرفتك تستحق شبكة تليق بها.','Votre métier mérite un réseau à sa hauteur.','Your craft deserves a network that fits it.'],
 heroS:['نجمع الحرفيين والموردين في جهة سوس ماسة حول التكوين المستمر والتضامن المهني والحماية الصحية.','Artisans et fournisseurs de Souss-Massa réunis autour de la formation, de la solidarité et de la protection santé.','Artisans and suppliers of Souss-Massa united around training, solidarity and health protection.'],
@@ -138,7 +138,7 @@ async function loadDir(){if(!sb){MEM=[];PRD=[];return} try{const[m,p]=await Prom
 function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.craft||m.craft===f.craft));if(lim)l=l.slice(0,lim);if(!l.length)return`<p class="empty">${T('noMem')}</p>`;
 return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.')}</div></article>`}).join('')}</div>`}
 function craftCount(c){return MEM.filter(m=>m.craft===c).length}
-function craftBoxesHtml(){return `<div class="grid">${CRAFTS.map(c=>{const n=craftCount(c);return `<a href="#/hirafiyin" data-goto-craft="${c}" class="craft-card"><div class="card k"><div class="b"><div style="font-size:2rem;">${CRAFT_ICONS[c]||'🔧'}</div><h3>${c}</h3><p class="cnt">${n} ${T('countArtisans')}</p><span class="btn sm">${T('viewArtisans')} ›</span></div></div></a>`}).join('')}</div>`}
+function craftBoxesHtml(){return `<div class="grid">${CRAFTS.map(c=>{const n=craftCount(c);return `<a href="#/hirafiyin" data-goto-craft="${c}" class="craft-card"><div class="card k"><div class="b"><h3>${c}</h3><p class="cnt">${n} ${T('countArtisans')}</p><span class="btn sm">${T('viewArtisans')}</span></div></div></a>`}).join('')}</div>`}
 async function pageHome(){
 await loadDir();
 app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
@@ -161,7 +161,7 @@ app.innerHTML=sec('hr',T('hirT'),T('hirS'),`
 <p style="font-weight:800;margin-bottom:12px;">${T('chooseCraft')}:</p>
 <div class="chips" id="craftChips" style="margin-bottom:18px;">
 <span class="chip-btn" data-craft="">${T('all')} (${MEM.length})</span>
-${CRAFTS.map(c=>`<span class="chip-btn" data-craft="${c}">${CRAFT_ICONS[c]||''} ${c} (${craftCount(c)})</span>`).join('')}
+${CRAFTS.map(c=>`<span class="chip-btn" data-craft="${c}">${c} (${craftCount(c)})</span>`).join('')}
 </div>
 <div id="hl">...</div><p style="margin-top:18px"><a class="btn" href="join.html">${T('joinReq')}</a></p>`);
 const render=(craft)=>{
