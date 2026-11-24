@@ -48,6 +48,12 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .about-box{background:var(--navy);border-radius:16px;padding:30px 22px;text-align:center;border-bottom:6px solid var(--cu)}
 .about-box h3{color:#fff;font-size:1.6rem;margin:10px 0;font-weight:900}
 .about-box p{color:#EAF2F8;font-size:1.05rem;line-height:2;max-width:750px;margin:0 auto}
+.craft-card{cursor:pointer;text-decoration:none}
+.craft-card .b{text-align:center;padding:22px 14px}
+.craft-card h3{font-size:1.3rem}
+.craft-card .cnt{color:var(--mut);margin:6px 0}
+.chip-btn{cursor:pointer}
+.chip-btn.on{background:var(--navy)!important;color:#fff!important}
 </style>
 </head>
 <body>
@@ -61,6 +67,7 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 const CFG={url:'https://oldwrxirxrshwvyqvpxp.supabase.co',key:'sb_publishable_Uv5HMjCc7ZgI4S7BlyjaFQ__ACuR_DX',phone:'0600213299',email:'lahcenassoughay@gmail.com'};
 const STATS=['+120','+15','+10'];
 const CRAFTS=['السباكة','الكهرباء','النجارة','البناء','الصباغة','التبريد والتكييف'];
+const CRAFT_ICONS={'السباكة':'🔧','الكهرباء':'⚡','النجارة':'🪚','البناء':'🧱','الصباغة':'🎨','التبريد والتكييف':'❄️'};
 const D={home:['الرئيسية','Accueil','Home'],trainings:['التكوينات','Formations','Trainings'],products:['المنتجات','Produits','Products'],partners:['الشركاء','Partenaires','Partners'],join:['انخرط','Adhérer','Join'],contact:['تواصل','Contact','Contact'],admin:['الإدارة','Admin','Admin'],
 heroT:['حرفتك تستحق شبكة تليق بها.','Votre métier mérite un réseau à sa hauteur.','Your craft deserves a network that fits it.'],
 heroS:['نجمع الحرفيين والموردين في جهة سوس ماسة حول التكوين المستمر والتضامن المهني والحماية الصحية.','Artisans et fournisseurs de Souss-Massa réunis autour de la formation, de la solidarité et de la protection santé.','Artisans and suppliers of Souss-Massa united around training, solidarity and health protection.'],
@@ -71,6 +78,10 @@ aboutS:['رسالة نؤمن بها، وأثر نزرعه','Une mission, un impa
 aboutP:['جمعية التكوين والتنمية الاجتماعية لرصاصي جهة سوس ماسة، جمعية تجمع الحرفيين والموردين في جهة سوس ماسة حول التكوين المستمر والتضامن المهني والحماية الصحية. نعمل للنهوض بقطاع الحرف عبر استقطاب ومساندة المهنيين، وتوفير البرامج التدريبية والأدوات والمعارف اللازمة، وتقديم الخدمات المساندة المستدامة، وتكريم المنجزات الفنية، وتسهيل طرق التواصل بين المهنيين.','Association de formation et de développement social des plombiers de Souss-Massa, réunissant artisans et fournisseurs autour de la formation continue, de la solidarité et de la protection santé.','Training and Social Development Association for Plumbers of Souss-Massa, bringing together artisans and suppliers around continuous training, professional solidarity and health protection.'],
 readMore:['قراءة المزيد','Lire la suite','Read More'],
 craftsT:['حرف البناء والصيانة في شبكة واحدة','Les métiers du bâtiment, un seul réseau','Building trades, one network'],
+craftsS:['اختر الحرفة باش تشوف الحرفيين ديالها','Choisissez un métier pour voir ses artisans','Choose a trade to see its artisans'],
+chooseCraft:['اختر الحرفة','Choisissez le métier','Choose trade'],
+viewArtisans:['شوف الحرفيين','Voir les artisans','See artisans'],
+countArtisans:['حرفي مسجل','artisan inscrit','registered artisan'],
 whyT:['ما تقدمه الجمعية لأعضائها','Ce que nous offrons','What we offer'],
 why:[[['تكوين مستمر','دورات تطبيقية تواكب التقنيات الجديدة.'],['تضامن مهني','شبكة دعم بين الأعضاء.'],['حماية صحية','شراكات طبية للأعضاء بأيت ملول.'],['فرص عمل','ظهور أكبر أمام الزبائن والمقاولات.']],[['Formation continue','Ateliers pratiques sur les nouvelles techniques.'],['Solidarité','Un réseau d’entraide entre membres.'],['Protection santé','Partenariats médicaux à Aït Melloul.'],['Opportunités','Plus de visibilité auprès des clients.']],[['Continuous training','Hands-on workshops on new techniques.'],['Solidarity','A support network among members.'],['Health protection','Medical partnerships in Aït Melloul.'],['Opportunities','More visibility with clients.']]],
 hirT:['دليل الأعضاء','Annuaire des membres','Members directory'],hirS:['الحرفيون والموردون الذين قبلتهم الجمعية.','Artisans et fournisseurs acceptés par l’association.','Artisans and suppliers accepted by the association.'],seeAll:['شاهد الدليل كاملا','Voir tout l’annuaire','See full directory'],
@@ -126,13 +137,15 @@ let MEM=[],PRD=[];
 async function loadDir(){if(!sb){MEM=[];PRD=[];return} try{const[m,p]=await Promise.all([sb.from('members').select('*').eq('status','accepted').eq('consent',true).order('created_at',{ascending:false}),sb.from('products').select('*').eq('status','accepted')]);MEM=m.data||[];PRD=p.data||[]}catch(e){MEM=[];PRD=[]}}
 function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.craft||m.craft===f.craft));if(lim)l=l.slice(0,lim);if(!l.length)return`<p class="empty">${T('noMem')}</p>`;
 return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.')}</div></article>`}).join('')}</div>`}
+function craftCount(c){return MEM.filter(m=>m.craft===c).length}
+function craftBoxesHtml(){return `<div class="grid">${CRAFTS.map(c=>{const n=craftCount(c);return `<a href="#/hirafiyin" data-goto-craft="${c}" class="craft-card"><div class="card k"><div class="b"><div style="font-size:2rem;">${CRAFT_ICONS[c]||'🔧'}</div><h3>${c}</h3><p class="cnt">${n} ${T('countArtisans')}</p><span class="btn sm">${T('viewArtisans')} ›</span></div></div></a>`}).join('')}</div>`}
 async function pageHome(){
+await loadDir();
 app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
 ${sec('about',T('aboutT'),T('aboutS'),`<div class="about-box"><span style="color:var(--gold);font-size:13px;font-weight:800;letter-spacing:2px;">HIRAFIYIN • SOUSS MASSA</span><h3>${T('aboutS')}</h3><p>${T('aboutP')}</p><a href="#/contact" class="btn" style="margin-top:22px;">› ${T('readMore')}</a></div>`)}
 ${sec('sante','شراكة تعاونية في خدمة الصحة','Un Partenariat au Service de la Santé — Centre Radiologie Touderte • Aït Melloul',`<div class="health"><img src="p1.jpeg.JPG" alt="" loading="lazy" onerror="this.src='logo.jpeg.jpg'"><div class="b"><span class="badge">Partenariat • شراكة</span><h3 style="margin:0 0 8px">الفحوصات الطبية لأعضاء الجمعية</h3><p style="color:var(--mut)">يستفيد أعضاء HIRAFIYIN من فحوصات طبية بشراكة مع مركز الأشعة تودرت - أيت ملول:</p><ul style="margin:10px 0;line-height:2"><li><b>IRM</b> - الرنين المغناطيسي</li><li><b>Radiologie</b> - الأشعة السينية</li><li><b>Échographie</b> - الفحص بالصدى</li><li><b>Mammographie</b> - فحص الثدي</li></ul><a class="btn" href="join.html">${T('joinReq')}</a></div></div>`)}
-${sec('c',T('craftsT'),'',`<div class="chips">${CRAFTS.map(c=>`<span>${c}</span>`).join('')}</div>`)}
+${sec('c',T('craftsT'),T('craftsS'),craftBoxesHtml())}
 ${sec('w',T('whyT'),'',cards2(T('why')))}
-${sec('hh',T('hirT'),T('hirS'),`<div id="hHome">...</div><p style="margin-top:18px"><a class="btn alt" href="#/hirafiyin" style="color:var(--ink)">${T('seeAll')}</a></p>`)}
 ${sec('t',T('trT'),T('trS'),`<div id="tr">...</div><p style="margin-top:18px"><a class="btn alt" href="#/trainings" style="color:var(--ink)">${T('seeG')}</a></p>`)}
 ${sec('h',T('howT'),'',cards2(T('how').map(([h,p],i)=>[(i+1)+'. '+h,p]))+`<p style="margin-top:18px"><a class="btn" href="join.html">${T('joinReq')}</a></p>`)}
 ${sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="sell.html" style="color:var(--ink)">${T('sell')}</a></p>`)}
@@ -140,9 +153,24 @@ ${sec('p',T('paT'),T('paS'),'<div id="pa">...</div>')}
 ${sec('k',T('ctT'),T('ctS'),contactHtml())}`;
 try{$('#tr').innerHTML=await trainingsHtml();}catch(e){if($('#tr')) $('#tr').innerHTML=`<p class="empty">${T('noTr')}</p>`}
 try{$('#pr').innerHTML=await productsHtml();}catch(e){}
-try{$('#pa').innerHTML=await partnersHtml();}catch(e){}
-try{await loadDir(); if($('#hHome')) $('#hHome').innerHTML=memCards({},6);}catch(e){}}
-async function pageHir(){app.innerHTML=sec('hr',T('hirT'),T('hirS'),`<div class="fl"><select id="fk"><option value="">${T('all')}</option><option value="artisan">${T('artisans')}</option><option value="supplier">${T('suppliers')}</option></select><select id="fc"><option value="">${T('all')}</option>${craftOpts}</select></div><div id="hl">...</div><p style="margin-top:18px"><a class="btn" href="join.html">${T('joinReq')}</a></p>`);await loadDir();const up=()=>{$('#hl').innerHTML=memCards({kind:$('#fk').value,craft:$('#fc').value})};up();$('#fk').onchange=$('#fc').onchange=up}
+try{$('#pa').innerHTML=await partnersHtml();}catch(e){}}
+async function pageHir(){
+await loadDir();
+let savedCraft=''; try{ savedCraft=localStorage.getItem('hirafiyin_craft')||''; localStorage.removeItem('hirafiyin_craft'); }catch(x){}
+app.innerHTML=sec('hr',T('hirT'),T('hirS'),`
+<p style="font-weight:800;margin-bottom:12px;">${T('chooseCraft')}:</p>
+<div class="chips" id="craftChips" style="margin-bottom:18px;">
+<span class="chip-btn" data-craft="">${T('all')} (${MEM.length})</span>
+${CRAFTS.map(c=>`<span class="chip-btn" data-craft="${c}">${CRAFT_ICONS[c]||''} ${c} (${craftCount(c)})</span>`).join('')}
+</div>
+<div id="hl">...</div><p style="margin-top:18px"><a class="btn" href="join.html">${T('joinReq')}</a></p>`);
+const render=(craft)=>{
+  $('#hl').innerHTML=memCards({craft:craft||undefined});
+  document.querySelectorAll('#craftChips .chip-btn').forEach(s=>s.classList.toggle('on',s.dataset.craft===craft));
+};
+render(savedCraft);
+document.querySelectorAll('#craftChips .chip-btn').forEach(s=>{ s.onclick=()=>render(s.dataset.craft); });
+}
 async function pageTrainings(){app.innerHTML=sec('t',T('trT'),T('trS'),'<div id="tr">...</div>')+sec('g',T('galT'),T('galS'),galleryHtml());$('#tr').innerHTML=await trainingsHtml()}
 async function pagePartners(){app.innerHTML=sec('p',T('paT'),T('paS'),'<div id="pa">...</div>');$('#pa').innerHTML=await partnersHtml()}
 async function pageProducts(){app.innerHTML=sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="sell.html" style="color:var(--ink)">${T('sell')}</a></p>`);$('#pr').innerHTML=await productsHtml()}
@@ -188,6 +216,7 @@ document.addEventListener('click',async e=>{
 const lb=e.target.closest('[data-lang]');if(lb){LANG=lb.dataset.lang;try{localStorage.setItem('hirafiyin_lang',LANG)}catch(x){}applyLang();return}
 if(e.target.closest('#mb')){$('#nv').classList.toggle('open');return}
 if(e.target.closest('nav a'))$('#nv').classList.remove('open');
+const gc=e.target.closest('[data-goto-craft]');if(gc){try{localStorage.setItem('hirafiyin_craft',gc.dataset.gotoCraft)}catch(x){}return}
 const b=e.target.closest('[data-act]');if(!b)return;const{act,t,id}=b.dataset;
 if(act==='zoom')zoom(+b.dataset.i);else if(act==='nx')zoom(GI+ +b.dataset.d);
 else if(act==='reg'){dlg.className='';dlg.innerHTML=`<h2>${esc(b.dataset.title)}</h2><form id="regForm" data-title="${esc(b.dataset.title)}"><input type="hidden" name="training_id" value="${esc(id)}">${personFields()}<button class="btn">${T('regOk')}</button></form>`;dlg.showModal()}
