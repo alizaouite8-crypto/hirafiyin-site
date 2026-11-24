@@ -43,6 +43,8 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .badge{display:inline-block;background:#d6f0e2;color:var(--ok);padding:4px 12px;border-radius:99px;font-size:.85rem;font-weight:700;margin-bottom:10px}
 :focus-visible{outline:3px solid var(--cu);outline-offset:2px}
 .topbar{background:#000;color:#f0c58f;text-align:center;font-size:13px;font-weight:800;padding:7px 10px}
+.adminStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.adminStats div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}.adminStats b{font-size:1.8rem;display:block;color:var(--navy)}.adminStats span{font-size:.85rem;color:var(--mut)}
+@media(max-width:600px){.adminStats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -85,6 +87,13 @@ const T=k=>(D[k]||[k,k,k])[LIX[LANG]];
 const $=s=>document.querySelector(s),app=$('#app'),dlg=$('#dlg');
 let sb=null;
 try{ if(window.supabase) sb=supabase.createClient(CFG.url,CFG.key); }catch(e){ sb=null; }
+// === ZOWAR - KAY-HSEB KOL DAKHLA ===
+try{
+  if(sb && !sessionStorage.getItem('counted')){
+    sb.from('visits').insert({page: location.hash || '/'});
+    sessionStorage.setItem('counted','1');
+  }
+}catch(e){}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const waLink=(p,t)=>{p=String(p).replace(/\D/g,'');if(p.startsWith('0'))p='212'+p.slice(1);return 'https://wa.me/'+p+'?text='+encodeURIComponent(t||'')};
 const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'#',last9=p=>String(p).replace(/\D/g,'').slice(-9);
@@ -136,7 +145,17 @@ const pageContact=()=>{app.innerHTML=sec('c',T('ctT'),T('ctS'),contactHtml())};
 let tab='registrations';
 async function pageAdmin(){if(!sb){app.innerHTML=sec('a','دخول الإدارة','',`<p class="empty">تعذر الاتصال بقاعدة البيانات. أعد المحاولة لاحقا.</p>`);return} const{data:{session}}=await sb.auth.getSession();if(!session){app.innerHTML=sec('a','دخول الإدارة','',`<div class="panel"><form id="loginForm"><label>البريد الإلكتروني<input name="email" type="email" required></label><label>كلمة المرور<input name="password" type="password" required></label><button class="btn">دخول</button></form></div>`);return}
 const tabs=[['registrations','تسجيلات التكوينات'],['members','طلبات الانخراط'],['trainings','التكوينات'],['products','المنتجات'],['partners','الشركاء']];
-app.innerHTML=sec('a','لوحة الإدارة','',`<div class="tabs">${tabs.map(([k,l])=>`<button data-act="tab" data-k="${k}" class="${k===tab?'on':''}">${l}</button>`).join('')}<button data-act="logout">خروج</button></div><div id="adm">...</div>`);
+// === STATS ZOWAR ===
+let vTotal=0,vToday=0,mTotal=0,pTotal=0;
+try{
+  const v=await sb.from('visits').select('created_at');
+  const visits=v.data||[]; vTotal=visits.length;
+  const today=new Date().toISOString().slice(0,10);
+  vToday=visits.filter(x=>(x.created_at||'').slice(0,10)===today).length;
+  const m=await sb.from('members').select('id'); mTotal=(m.data||[]).length;
+  const p=await sb.from('products').select('id'); pTotal=(p.data||[]).length;
+}catch(e){}
+app.innerHTML=sec('a','لوحة الإدارة','',`<div class="adminStats"><div><b>${vTotal}</b><span>إجمالي الزوار</span></div><div><b>${vToday}</b><span>زوار اليوم</span></div><div><b>${mTotal}</b><span>طلبات الانخراط</span></div><div><b>${pTotal}</b><span>المنتجات</span></div></div><div class="tabs">${tabs.map(([k,l])=>`<button data-act="tab" data-k="${k}" class="${k===tab?'on':''}">${l}</button>`).join('')}<button data-act="logout">خروج</button></div><div id="adm">...</div>`);
 $('#adm').innerHTML=await({registrations:admRegs,members:admMembers,trainings:admTrainings,partners:admPartners,products:admProducts})[tab]()}
 const stTag=s=>`<span class="tag ${esc(s)}">${{pending:'في الانتظار',accepted:'مقبول',refused:'مرفوض'}[s]||esc(s)}</span>`;
 const reqRow=(t,r,line,m)=>`<div class="row"><div><b>${esc(r.name)}</b> ${stTag(r.status)}<div class="meta">${esc(r.phone)} · ${esc(r.city)} · ${line}</div></div><div class="acts"><button class="btn sm ok" data-act="ok" data-t="${t}" data-id="${esc(r.id)}" data-p="${esc(r.phone)}" data-m="${esc(m)}">قبول + واتساب</button><button class="btn sm no" data-act="no" data-t="${t}" data-id="${esc(r.id)}">رفض</button><button class="btn sm alt" data-act="del" data-t="${t}" data-id="${esc(r.id)}">حذف</button></div></div>`;
