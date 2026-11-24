@@ -55,6 +55,7 @@ footer{background:var(--navy);color:#cfd8e3;padding:26px 0;font-size:.92rem}foot
 .chip-btn{cursor:pointer}
 .chip-btn.on{background:var(--navy)!important;color:#fff!important}
 .head-right{display:flex;align-items:center;gap:8px}
+.clicks{font-size:.85rem;color:var(--mut);font-weight:700}
 </style>
 </head>
 <body>
@@ -121,7 +122,27 @@ const HONEY='<input name="website" tabindex="-1" autocomplete="off" aria-hidden=
 const phoneIn=()=>`<label>${T('phone')}<input name="phone" type="tel" required placeholder="06XXXXXXXX" pattern="(\\+?212|0)[5-7][0-9]{8}"></label>`;
 const personFields=()=>`${HONEY}<label>${T('name')}<input name="name" required></label>${phoneIn()}<label>${T('city')}<input name="city" required></label>`;
 const sec=(id,h,s,b)=>`<section id="${id}"><div class="wrap"><h2>${h}</h2><p class="sub">${s||''}</p>${b}</div></section>`;
-const cbtn=(p,m)=>`<div class="pc"><a class="btn sm ok" target="_blank" rel="noopener" href="${waLink(p,m)}">${T('wa')}</a><a class="btn sm alt" href="tel:${esc(String(p).replace(/\s/g,''))}">${T('call')}</a></div>`;
+// --- KLIKAT ---
+let CLICK_COUNTS={};
+function getClicksLocal(){try{return JSON.parse(localStorage.getItem('hirafiyin_clicks')||'{}')}catch(e){return{}}}
+function saveClickLocal(phone){let c=getClicksLocal();c[phone]=(c[phone]||0)+1;try{localStorage.setItem('hirafiyin_clicks',JSON.stringify(c))}catch(e){} CLICK_COUNTS=c;}
+async function trackClick(phone,name,kind,type){
+  saveClickLocal(phone);
+  try{ if(sb) await sb.from('clicks').insert({member_phone:String(phone),member_name:name||'',kind:kind||'',type:type||'whatsapp'}); }catch(e){}
+}
+async function loadClickCounts(){
+  CLICK_COUNTS=getClicksLocal();
+  try{
+    if(sb){
+      const{data}=await sb.from('clicks').select('member_phone');
+      if(data){ let cc={}; data.forEach(r=>{ if(r.member_phone) cc[r.member_phone]=(cc[r.member_phone]||0)+1; }); if(Object.keys(cc).length) CLICK_COUNTS=cc; }
+    }
+  }catch(e){}
+  return CLICK_COUNTS;
+}
+const clicksFor=p=>CLICK_COUNTS[String(p)]||CLICK_COUNTS[last9(p)]||0;
+// cbtn daba kay-7seb klikat: cbtn(phone,msg,name,kind)
+const cbtn=(p,m,nm,kd)=>`<div class="pc"><a class="btn sm ok" data-click="whatsapp" data-phone="${esc(p)}" data-name="${esc(nm||'')}" data-kind="${esc(kd||'')}" target="_blank" rel="noopener" href="${waLink(p,m)}">${T('wa')}</a><a class="btn sm alt" data-click="call" data-phone="${esc(p)}" data-name="${esc(nm||'')}" data-kind="${esc(kd||'')}" href="tel:${esc(String(p).replace(/\s/g,''))}">${T('call')}</a></div>`;
 const doneHtml=m=>`<h3>${T('thanks')}</h3><p>${T('thanksS')}</p><a class="btn ok" target="_blank" rel="noopener" href="${waLink(CFG.phone,m)}">${T('sendWa')}</a>`;
 const contactHtml=()=>`<p><a class="btn" href="${waLink(CFG.phone)}" target="_blank" rel="noopener">${T('wa')}</a> <a class="btn alt" href="tel:${CFG.phone}" style="color:var(--ink)">${CFG.phone}</a> <a class="btn alt" href="mailto:${CFG.email}" style="color:var(--ink)">${CFG.email}</a></p>`;
 const cards2=a=>`<div class="grid">${a.map(([h,p])=>`<div class="card k"><div class="b"><h3>${h}</h3><p>${p}</p></div></div>`).join('')}</div>`;
@@ -132,15 +153,15 @@ let GI=0;function zoom(i){GI=(i+GAL.length)%GAL.length;const[s,c]=GAL[GI];dlg.cl
 addEventListener('keydown',e=>{if(dlg.open&&dlg.classList.contains('big')){if(e.key==='ArrowLeft')zoom(GI+1);if(e.key==='ArrowRight')zoom(GI-1)}});
 async function trainingsHtml(){if(!sb) return `<p class="empty">${T('noTr')}</p>`; try{const today=new Date().toISOString().slice(0,10);const{data,error}=await sb.from('trainings').select('*').gte('date',today).order('date');if(error||!data.length)return`<p class="empty">${T('noTr')}</p>`;return`<div class="grid">${data.map(t=>`<article class="card">${t.image_url?`<img src="${esc(safeUrl(t.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(t.title)}</h3><div class="meta">${esc(t.date)} · ${esc(t.place)}${t.seats?' · '+esc(t.seats)+' '+T('seats'):''}</div><p>${esc(t.description)}</p><button class="btn" style="margin-top:auto;align-self:flex-start" data-act="reg" data-id="${esc(t.id)}" data-title="${esc(t.title)}">${T('reg')}</button></div></article>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noTr')}</p>`}}
 async function partnersHtml(){if(!sb) return `<p class="empty">${T('noPa')}</p>`; try{const{data,error}=await sb.from('partners').select('*').order('created_at');if(error||!data.length)return`<p class="empty">${T('noPa')}</p>`;return`<div class="partners chips">${data.map(p=>`<a href="${esc(safeUrl(p.link))}" target="_blank" rel="noopener">${p.logo_url?`<img src="${esc(safeUrl(p.logo_url))}" alt="" style="height:36px;max-width:90px;object-fit:contain">`:''}${esc(p.name)}</a>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noPa')}</p>`}}
-async function productsHtml(){if(!sb) return `<p class="empty">${T('noPr')}</p>`; try{const{data,error}=await sb.from('products').select('*').eq('status','accepted').order('created_at',{ascending:false});if(error||!data.length)return`<p class="empty">${T('noPr')}</p>`;return`<div class="grid">${data.map(p=>`<article class="card">${p.image_url?`<img src="${esc(safeUrl(p.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.company)}${p.price?' · '+esc(p.price):''}</div><p>${esc(p.description)}</p>${cbtn(p.phone,'السلام عليكم، أريد الاستفسار عن المنتج: '+p.name)}</div></article>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noPr')}</p>`}}
+async function productsHtml(){if(!sb) return `<p class="empty">${T('noPr')}</p>`; try{const{data,error}=await sb.from('products').select('*').eq('status','accepted').order('created_at',{ascending:false});if(error||!data.length)return`<p class="empty">${T('noPr')}</p>`;return`<div class="grid">${data.map(p=>`<article class="card">${p.image_url?`<img src="${esc(safeUrl(p.image_url))}" alt="" loading="lazy">`:''}<div class="b"><h3>${esc(p.name)}</h3><div class="meta">${esc(p.company)}${p.price?' · '+esc(p.price):''}</div><p>${esc(p.description)}</p><span class="clicks">👁 ${clicksFor(p.phone)} clika</span>${cbtn(p.phone,'السلام عليكم، أريد الاستفسار عن المنتج: '+p.name,p.company,'supplier')}</div></article>`).join('')}</div>`}catch(e){return `<p class="empty">${T('noPr')}</p>`}}
 let MEM=[],PRD=[];
 async function loadDir(){if(!sb){MEM=[];PRD=[];return} try{const[m,p]=await Promise.all([sb.from('members').select('*').eq('status','accepted').eq('consent',true).order('created_at',{ascending:false}),sb.from('products').select('*').eq('status','accepted')]);MEM=m.data||[];PRD=p.data||[]}catch(e){MEM=[];PRD=[]}}
 function memCards(f,lim){let l=MEM.filter(m=>(!f.kind||m.kind===f.kind)&&(!f.craft||m.craft===f.craft));if(lim)l=l.slice(0,lim);if(!l.length)return`<p class="empty">${T('noMem')}</p>`;
-return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.')}</div></article>`}).join('')}</div>`}
+return`<div class="grid">${l.map(m=>{const its=m.kind==='supplier'?PRD.filter(x=>last9(x.phone)===last9(m.phone)):[];return`<article class="card k"><div class="b"><span class="tag accepted">${m.kind==='artisan'?T('art'):T('sup')}</span><h3>${esc(m.name)}</h3><div class="meta">${esc(m.craft||'')} · ${esc(m.city||'')}</div><span class="clicks">👁 ${clicksFor(m.phone)} clika</span>${its.length?`<ul style="margin:4px 0;padding-inline-start:18px">${its.map(x=>`<li><b>${esc(x.name)}</b>${x.price?' — '+esc(x.price):''}</li>`).join('')}</ul>`:''}${cbtn(m.phone,'السلام عليكم، وجدت اسمك في دليل جمعية رصاصي جهة سوس ماسة.',m.name,m.kind)}</div></article>`}).join('')}</div>`}
 function craftCount(c){return MEM.filter(m=>m.craft===c).length}
-function craftBoxesHtml(){return `<div class="grid">${CRAFTS.map(c=>{return `<a href="#/hirafiyin" data-goto-craft="${c}" class="craft-card"><div class="card k"><div class="b"><h3>${c}</h3><span class="btn sm">حرفيي ${c}</span></div></div></a>`}).join('')}</div>`}
+function craftBoxesHtml(){return `<div class="grid">${CRAFTS.map(c=>{return `<a href="#/hirafiyin" data-goto-craft="${c}" class="craft-card"><div class="card k"><div class="b"><h3>حرفيي ${c}</h3><span class="btn sm">حرفيي ${c}</span></div></div></a>`}).join('')}</div>`}
 async function pageHome(){
-await loadDir();
+await loadDir(); await loadClickCounts();
 app.innerHTML=`<div class="hero"><div class="wrap"><div><p class="an">HIRAFIYIN • SOUSS MASSA • 2026</p><h1>${T('heroT')}</h1><p>${T('heroS')}</p><a class="btn" href="join.html">${T('joinA')}</a> <a class="btn alt" href="join.html">${T('joinS')}</a> <a class="btn alt" href="#/hirafiyin">${T('seeH')}</a><div class="stats">${STATS.map((n,i)=>`<div class="stat"><b>${n}</b><span>${T('st'+(i+1))}</span></div>`).join('')}</div></div><img class="hl" src="logo.jpeg.jpg" alt="HIRAFIYIN" onerror="this.remove()"></div></div>
 ${sec('about',T('aboutT'),T('aboutS'),`<div class="about-box"><span style="color:var(--gold);font-size:13px;font-weight:800;letter-spacing:2px;">HIRAFIYIN • SOUSS MASSA</span><h3>${T('aboutS')}</h3><p>${T('aboutP')}</p><a href="#/contact" class="btn" style="margin-top:22px;">› ${T('readMore')}</a></div>`)}
 ${sec('sante','شراكة تعاونية في خدمة الصحة','Un Partenariat au Service de la Santé — Centre Radiologie Touderte • Aït Melloul',`<div class="health"><img src="p1.jpeg.JPG" alt="" loading="lazy" onerror="this.src='logo.jpeg.jpg'"><div class="b"><span class="badge">Partenariat • شراكة</span><h3 style="margin:0 0 8px">الفحوصات الطبية لأعضاء الجمعية</h3><p style="color:var(--mut)">يستفيد أعضاء HIRAFIYIN من فحوصات طبية بشراكة مع مركز الأشعة تودرت - أيت ملول:</p><ul style="margin:10px 0;line-height:2"><li><b>IRM</b> - الرنين المغناطيسي</li><li><b>Radiologie</b> - الأشعة السينية</li><li><b>Échographie</b> - الفحص بالصدى</li><li><b>Mammographie</b> - فحص الثدي</li></ul><a class="btn" href="join.html">${T('joinReq')}</a></div></div>`)}
@@ -155,7 +176,7 @@ try{$('#tr').innerHTML=await trainingsHtml();}catch(e){if($('#tr')) $('#tr').inn
 try{$('#pr').innerHTML=await productsHtml();}catch(e){}
 try{$('#pa').innerHTML=await partnersHtml();}catch(e){}}
 async function pageHir(){
-await loadDir();
+await loadDir(); await loadClickCounts();
 let savedCraft=''; try{ savedCraft=localStorage.getItem('hirafiyin_craft')||''; localStorage.removeItem('hirafiyin_craft'); }catch(x){}
 app.innerHTML=sec('hr',T('hirT'),T('hirS'),`
 <p style="font-weight:800;margin-bottom:12px;">${T('chooseCraft')}:</p>
@@ -173,14 +194,14 @@ document.querySelectorAll('#craftChips .chip-btn').forEach(s=>{ s.onclick=()=>re
 }
 async function pageTrainings(){app.innerHTML=sec('t',T('trT'),T('trS'),'<div id="tr">...</div>')+sec('g',T('galT'),T('galS'),galleryHtml());$('#tr').innerHTML=await trainingsHtml()}
 async function pagePartners(){app.innerHTML=sec('p',T('paT'),T('paS'),'<div id="pa">...</div>');$('#pa').innerHTML=await partnersHtml()}
-async function pageProducts(){app.innerHTML=sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="sell.html" style="color:var(--ink)">${T('sell')}</a></p>`);$('#pr').innerHTML=await productsHtml()}
+async function pageProducts(){await loadClickCounts();app.innerHTML=sec('m',T('prT'),T('prS'),`<div id="pr">...</div><p style="margin-top:18px"><a class="btn alt" href="sell.html" style="color:var(--ink)">${T('sell')}</a></p>`);$('#pr').innerHTML=await productsHtml()}
 const pageJoin=()=>{app.innerHTML=sec('j',T('joinReq'),T('joinS2'),`<div class="panel"><form id="joinForm"><label>${T('kind')}<select name="kind"><option value="artisan">${T('art')}</option><option value="supplier">${T('sup')}</option></select></label>${personFields()}<label>${T('craft')}<select name="craft">${craftOpts}</select></label><label style="display:flex;gap:8px;align-items:flex-start;font-weight:400"><input type="checkbox" name="consent" required style="width:auto;margin-top:7px">${T('consent')}</label><button class="btn">${T('send')}</button></form></div>`)};
 const pageSell=()=>{app.innerHTML=sec('s',T('sell'),'',`<div class="panel"><form id="sellForm">${HONEY}<label>اسم الشركة / Entreprise<input name="company" required></label>${phoneIn()}<label>اسم المنتج / Produit<input name="name" required></label><label>الثمن / Prix<input name="price" placeholder="120 DH"></label><label>وصف / Description<textarea name="description" rows="3"></textarea></label><label>صورة / Photo<input name="image" type="file" accept="image/*"></label><button class="btn">${T('send')}</button></form></div>`)};
 const pageContact=()=>{app.innerHTML=sec('c',T('ctT'),T('ctS'),contactHtml())};
 let tab='registrations';
 async function pageAdmin(){if(!sb){app.innerHTML=sec('a','دخول الإدارة','',`<p class="empty">تعذر الاتصال بقاعدة البيانات. أعد المحاولة لاحقا.</p>`);return} const{data:{session}}=await sb.auth.getSession();if(!session){app.innerHTML=sec('a','دخول الإدارة','',`<div class="panel"><form id="loginForm"><label>البريد الإلكتروني<input name="email" type="email" required></label><label>كلمة المرور<input name="password" type="password" required></label><button class="btn">دخول</button></form></div>`);return}
-const tabs=[['registrations','تسجيلات التكوينات'],['members','طلبات الانخراط'],['trainings','التكوينات'],['products','المنتجات'],['partners','الشركاء']];
-let vTotal=0,vToday=0,mTotal=0,pTotal=0;
+const tabs=[['registrations','تسجيلات التكوينات'],['members','طلبات الانخراط'],['trainings','التكوينات'],['products','المنتجات'],['partners','الشركاء'],['clicks','الكليكات 💰']];
+let vTotal=0,vToday=0,mTotal=0,pTotal=0,cTotal=0;
 try{
   const v=await sb.from('visits').select('created_at');
   const visits=v.data||[]; vTotal=visits.length;
@@ -188,9 +209,20 @@ try{
   vToday=visits.filter(x=>(x.created_at||'').slice(0,10)===today).length;
   const m=await sb.from('members').select('id'); mTotal=(m.data||[]).length;
   const p=await sb.from('products').select('id'); pTotal=(p.data||[]).length;
+  const c=await sb.from('clicks').select('id'); cTotal=(c.data||[]).length;
 }catch(e){}
-app.innerHTML=sec('a','لوحة الإدارة','',`<div class="adminStats"><div><b>${vTotal}</b><span>إجمالي الزوار</span></div><div><b>${vToday}</b><span>زوار اليوم</span></div><div><b>${mTotal}</b><span>طلبات الانخراط</span></div><div><b>${pTotal}</b><span>المنتجات</span></div></div><div class="tabs">${tabs.map(([k,l])=>`<button data-act="tab" data-k="${k}" class="${k===tab?'on':''}">${l}</button>`).join('')}<button data-act="logout">خروج</button></div><div id="adm">...</div>`);
-$('#adm').innerHTML=await({registrations:admRegs,members:admMembers,trainings:admTrainings,partners:admPartners,products:admProducts})[tab]()}
+app.innerHTML=sec('a','لوحة الإدارة','',`<div class="adminStats"><div><b>${vTotal}</b><span>إجمالي الزوار</span></div><div><b>${vToday}</b><span>زوار اليوم</span></div><div><b>${cTotal}</b><span>مجموع الكليكات</span></div><div><b>${pTotal}</b><span>المنتجات</span></div></div><div class="tabs">${tabs.map(([k,l])=>`<button data-act="tab" data-k="${k}" class="${k===tab?'on':''}">${l}</button>`).join('')}<button data-act="logout">خروج</button></div><div id="adm">...</div>`);
+$('#adm').innerHTML=await({registrations:admRegs,members:admMembers,trainings:admTrainings,partners:admPartners,products:admProducts,clicks:admClicks})[tab]()}
+async function admClicks(){
+  try{
+    const{data}=await sb.from('clicks').select('*').order('created_at',{ascending:false}).limit(500);
+    if(!data?.length) return '<p class="empty">ما كاين حتى كليك باقي - ملي يبداو الناس يكليكيو غادي يبانو هنا.</p>';
+    let by={}; data.forEach(r=>{ let k=(r.member_name||'')+' | '+(r.member_phone||''); if(!by[k]) by[k]={name:r.member_name||'-',phone:r.member_phone||'',kind:r.kind||'',wa:0,call:0,total:0}; by[k].total++; if(r.type==='call') by[k].call++; else by[k].wa++; });
+    let rows=Object.values(by).sort((a,b)=>b.total-a.total);
+    let total=data.length;
+    return `<div class="panel" style="max-width:100%;margin-bottom:14px"><b>مجموع الكليكات: ${total}</b> — إلا بعتي الكليك ب 5 DH = <b>${total*5} DH</b> — إلا بعتيه ب 10 DH = <b>${total*10} DH</b></div>`+rows.map(r=>`<div class="row"><div><b>${esc(r.name)}</b> — ${esc(r.phone)} — ${esc(r.kind)}<div class="meta">واتساب: ${r.wa} | اتصال: ${r.call} | المجموع: <b>${r.total} clika</b> — الثمن ب 5 DH = ${r.total*5} DH</div></div></div>`).join('');
+  }catch(e){ return '<p class="empty">ما كاين حتى كليك باقي.</p>'; }
+}
 const stTag=s=>`<span class="tag ${esc(s)}">${{pending:'في الانتظار',accepted:'مقبول',refused:'مرفوض'}[s]||esc(s)}</span>`;
 const reqRow=(t,r,line,m)=>`<div class="row"><div><b>${esc(r.name)}</b> ${stTag(r.status)}<div class="meta">${esc(r.phone)} · ${esc(r.city)} · ${line}</div></div><div class="acts"><button class="btn sm ok" data-act="ok" data-t="${t}" data-id="${esc(r.id)}" data-p="${esc(r.phone)}" data-m="${esc(m)}">قبول + واتساب</button><button class="btn sm no" data-act="no" data-t="${t}" data-id="${esc(r.id)}">رفض</button><button class="btn sm alt" data-act="del" data-t="${t}" data-id="${esc(r.id)}">حذف</button></div></div>`;
 async function admRegs(){const{data}=await sb.from('registrations').select('*, trainings(title,date,place)').order('created_at',{ascending:false});if(!data?.length)return'<p class="empty">لا توجد تسجيلات بعد.</p>';return data.map(r=>reqRow('registrations',r,esc(r.trainings?.title||''),`السلام عليكم ${r.name}، تم قبول تسجيلك في تكوين "${r.trainings?.title}" بتاريخ ${r.trainings?.date} في ${r.trainings?.place}. جمعية رصاصي سوس ماسة.`)).join('')}
@@ -217,6 +249,8 @@ const lb=e.target.closest('[data-lang]');if(lb){LANG=lb.dataset.lang;try{localSt
 if(e.target.closest('#mb')){$('#nv').classList.toggle('open');return}
 if(e.target.closest('nav a'))$('#nv').classList.remove('open');
 const gc=e.target.closest('[data-goto-craft]');if(gc){try{localStorage.setItem('hirafiyin_craft',gc.dataset.gotoCraft)}catch(x){}return}
+// Klikat - kay-t7seb 9bel ma y-mchi l WhatsApp
+const ck=e.target.closest('[data-click]');if(ck){ trackClick(ck.dataset.phone,ck.dataset.name,ck.dataset.kind,ck.dataset.click); return; }
 const b=e.target.closest('[data-act]');if(!b)return;const{act,t,id}=b.dataset;
 if(act==='zoom')zoom(+b.dataset.i);else if(act==='nx')zoom(GI+ +b.dataset.d);
 else if(act==='reg'){dlg.className='';dlg.innerHTML=`<h2>${esc(b.dataset.title)}</h2><form id="regForm" data-title="${esc(b.dataset.title)}"><input type="hidden" name="training_id" value="${esc(id)}">${personFields()}<button class="btn">${T('regOk')}</button></form>`;dlg.showModal()}
