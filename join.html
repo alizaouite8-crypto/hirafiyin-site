@@ -22,7 +22,24 @@
 <label>المدينة</label>
 <input id="city" required placeholder="أكادير">
 <label>التخصص / المجال</label>
-<select id="craft"><option>السباكة</option><option>الكهرباء</option><option>النجارة</option><option>البناء</option><option>الصباغة</option><option>التبريد والتكييف</option><option>أخرى</option></select>
+<select id="craft" onchange="checkCraft()">
+<option>السباكة</option>
+<option>الكهرباء</option>
+<option>النجارة</option>
+<option>البناء</option>
+<option>الصباغة</option>
+<option>الزليج</option>
+<option>اللحام / الحدادة</option>
+<option>الجبس</option>
+<option>الألمنيوم</option>
+<option>التبريد والتكييف</option>
+<option>الميكانيك</option>
+<option>النجارة المعدنية</option>
+<option>تركيب الزجاج</option>
+<option>الرخام</option>
+<option>أخرى - اكتب تخصصك</option>
+</select>
+<input id="craftCustom" placeholder="اكتب تخصصك هنا - مثال: تركيب الزجاج..." style="display:none;margin-top:8px">
 <label><input type="checkbox" required style="width:auto"> أوافق على ظهور اسمي ومدينتي ورقم هاتفي في دليل الجمعية بعد قبول طلبي.</label>
 <button class="btn" id="btnSend">أرسل طلب الانخراط</button>
 </form>
@@ -31,10 +48,22 @@
 <script>
 var sb=null;
 try{ sb=supabase.createClient('https://oldwrxirxrshwvyqvpxp.supabase.co','sb_publishable_Uv5HMjCc7ZgI4S7BlyjaFQ__ACuR_DX'); }catch(e){ sb=null; }
+
+function checkCraft(){
+  var c=document.getElementById('craft').value;
+  var inp=document.getElementById('craftCustom');
+  if(c.indexOf('أخرى') !== -1){
+    inp.style.display='block';
+    inp.required=true;
+  } else {
+    inp.style.display='none';
+    inp.required=false;
+  }
+}
+
 function sendWA(e){
  e.preventDefault();
  var btn=document.getElementById('btnSend');
- // 1 - NICHAN - L-BOUTON Y-WELLI KHEDER - MA-KAY-TSENNACH SUPABASE
  btn.style.setProperty('background','#1f7a4d','important');
  btn.style.color='#fff';
  btn.textContent='✓ تم الإرسال';
@@ -45,9 +74,11 @@ function sendWA(e){
  var phone=document.getElementById('phone').value;
  var city=document.getElementById('city').value;
  var craft=document.getElementById('craft').value;
+ if(craft.indexOf('أخرى') !== -1){
+   craft = document.getElementById('craftCustom').value;
+ }
  var kindTxt = kind==='artisan' ? 'حرفي' : 'مورد';
 
- // 2 - Sjel f Supabase f l-khalfiya - bla ma y-waqqef l-bouton
  if(sb){
    sb.from('members').insert({name:name, phone:phone, city:city, craft:craft, kind:kind, consent:true}).then(function(){});
  }
